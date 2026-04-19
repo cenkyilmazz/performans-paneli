@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performans Asistanı</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Inter+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f5f5;
+  --white: #ffffff;
+  --border: #e5e5e5;
+  --border-dark: #d4d4d4;
+  --text: #171717;
+  --text-2: #404040;
+  --text-3: #737373;
+  --text-4: #a3a3a3;
+  --red: #ef4444;
+  --green: #16a34a;
+  --yellow: #d97706;
+  --radius: 8px;
+  --shadow: 0 1px 2px rgba(0,0,0,.08);
+  --max: 800px;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--white);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── TOPNAV ── */
+.nav {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  height: 52px; display: flex; align-items: center;
+  position: sticky; top: 0; z-index: 50;
+}
+.nav-inner {
+  padding: 0 30px;
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+
+.nav-tabs { display: flex; gap: 2px; }
+.ntab {
+  border: none; background: transparent; font-family: inherit;
+  font-size: 13px; font-weight: 500; color: var(--text-3);
+  padding: 5px 14px; border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; transition: all .15s;
+}
+.ntab:hover { background: var(--bg); color: var(--text); }
+.ntab.active { background: var(--text); color: white; }
+
+/* ── PAGE TOGGLE ── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── HERO BAND — grey background only here ── */
+.hero {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  width: 100%;
+}
+.hero-inner {
+  max-width: var(--max); margin: 0 auto;
+  padding: 36px 24px 32px;
+}
+.hero h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.4px; }
+.hero p  { font-size: 14px; color: var(--text-3); margin-top: 1px; }
+
+/* ── MAIN CONTENT — white background ── */
+.content { max-width: var(--max); margin: 0 auto; padding: 28px 24px 60px; }
+
+/* ── CARD ── */
+.card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px;
+}
+.card-inner { padding: 16px 16px 16px; }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 16px; }
+.card-top-bar {
+  font-size: 14px; font-weight: 600;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--white);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* ── FORM ── */
+.g3 { display: grid; grid-template-columns: 1fr 1fr 0.55fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--text-3);
+}
+input[type="text"], input[type="password"], textarea, select {
+  width: 100%; background: var(--white); border: 1px solid var(--border-dark);
+  border-radius: 6px; padding: 8px 10px; font-size: 14px;
+  font-family: inherit; color: var(--text); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+input::placeholder, textarea::placeholder { color: var(--text-4); }
+input:focus, textarea:focus, select:focus {
+  border-color: var(--text); box-shadow: 0 0 0 2px rgba(23,23,23,.07);
+}
+textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23737373' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m4 6 4 4 4-4'/%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: right 8px center;
+  background-size: 14px; padding-right: 30px; cursor: pointer; appearance: none;
+}
+
+/* ── SECTION ROW ── */
+.sec-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 24px;
+}
+.sec-row h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.4px; }
+.sec-row p  { font-size: 13px; color: var(--text-3); margin-top: 2px; }
+
+/* ── GOAL CARD ── */
+.goal-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  margin-bottom: 12px; overflow: hidden;
+}
+.goal-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px; border-bottom: 1px solid var(--border);
+  background: var(--white);
+}
+.goal-label { font-size: 14px; font-weight: 600; }
+.goal-actions { display: flex; align-items: center; gap: 12px; }
+.goal-score { font-size: 13px; font-weight: 500; color: var(--text-3); display: none; }
+.goal-score b { font-weight: 700; }
+.goal-score b.g { color: var(--green); }
+.goal-score b.y { color: var(--yellow); }
+.goal-score b.r { color: var(--red); }
+.rm-btn {
+  font-size: 13px; font-weight: 500; color: var(--red);
+  background: none; border: none; cursor: pointer; font-family: inherit; padding: 0;
+}
+.rm-btn:hover { opacity: .7; }
+
+.toggle-btn {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer;
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  transition: background .15s, border-color .15s; flex-shrink: 0;
+}
+.toggle-btn:hover { background: var(--bg); border-color: var(--border-dark); }
+.toggle-btn:hover { color: var(--text); }
+.toggle-icon { font-size: 18px; line-height: 1; transition: transform .2s ease; }
+.toggle-icon.open { transform: rotate(180deg); }
+.goal-body { overflow: hidden; transition: all .2s ease; }
+
+.okr-field { padding: 10px 16px 16px; border-bottom: 1px solid var(--border); }
+.okr-field:last-child { border-bottom: none; padding-bottom: 16px; }
+.okr-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 6px;
+}
+.okr-field input, .okr-field textarea {
+  border: 1px solid var(--border-dark); background: var(--white); border-radius: 6px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; border-radius: 8px; font-family: inherit;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  transition: all .15s; border: 1px solid; line-height: 1;
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; pointer-events: none; }
+.btn-add {
+  background: var(--white); color: var(--text);
+  border-color: var(--border-dark); padding: 7px 14px; box-shadow: var(--shadow);
+  white-space: nowrap;
+}
+.btn-add:hover { background: var(--bg); }
+.btn-primary {
+  background: #4601B6; color: white; border-color: #4601B6;
+  width: 100%; padding: 14px; font-size: 15px; border-radius: 10px;
+}
+.btn-primary:hover { background: #3800a0; }
+.btn-sm {
+  background: var(--white); color: var(--text-2);
+  border-color: var(--border-dark); padding: 6px 12px;
+  font-size: 13px; box-shadow: var(--shadow);
+}
+.btn-sm:hover { background: var(--bg); }
+
+/* ── ALERT ── */
+.err {
+  background: #fef2f2; border: 1px solid #fecaca;
+  border-radius: 6px; padding: 10px 13px; font-size: 13px;
+  color: var(--red); margin-bottom: 12px; display: none;
+}
+
+/* ── LOADING ── */
+.loading {
+  display: none; flex-direction: column; align-items: center;
+  gap: 12px; padding: 48px 0;
+}
+.spinner {
+  width: 22px; height: 22px; border: 2px solid var(--border-dark);
+  border-top-color: var(--text); border-radius: 50%;
+  animation: spin .65s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading p { font-size: 13px; color: var(--text-3); }
+
+/* ── RESULT ── */
+.result { display: none; margin-top: 28px; }
+.score-banner {
+  background: var(--text); color: white; border-radius: var(--radius);
+  padding: 22px 24px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 22px;
+}
+.sc-num {
+  font-family: 'Inter Mono', monospace; font-size: 52px;
+  font-weight: 700; line-height: 1; letter-spacing: -3px; flex-shrink: 0;
+}
+.sc-sep { width: 1px; height: 50px; background: rgba(255,255,255,.15); flex-shrink: 0; }
+.sc-info .si-name   { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+.sc-info .si-period { font-size: 13px; opacity: .55; margin-top: 3px; }
+.sc-info .si-badge  {
+  display: inline-block; margin-top: 10px; padding: 3px 10px;
+  border-radius: 9999px; border: 1px solid rgba(255,255,255,.2);
+  font-size: 12px; font-weight: 500;
+}
+.res-lbl {
+  font-size: 10px; font-weight: 600; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--text-3); margin-bottom: 7px;
+}
+.res-text {
+  font-size: 14px; line-height: 1.75; background: var(--bg);
+  border-radius: 6px; padding: 12px 14px;
+}
+.res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.res-sec  { margin-bottom: 12px; }
+.gsr { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.gsr:last-child { border-bottom: none; }
+.gsr-l { flex: 1; }
+.gsr-name { font-size: 13px; font-weight: 600; }
+.gsr-cmt  { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.pbar { width: 100px; height: 4px; background: var(--border-dark); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.pfill { height: 100%; border-radius: 2px; }
+.gsr-sc { font-family: 'Inter Mono', monospace; font-size: 13px; font-weight: 600; width: 36px; text-align: right; }
+
+/* ── MANAGER ── */
+.mgr-content { max-width: 1100px; margin: 0 auto; padding: 36px 24px 60px; }
+.gate-box { max-width: 380px; margin: 72px auto; }
+.gate-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 28px;
+}
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px;
+}
+.stat-val { font-family: 'Inter Mono', monospace; font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+.stat-lbl { font-size: 12px; color: var(--text-3); margin-top: 5px; font-weight: 500; }
+.tbl { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.tbl-hdr {
+  display: grid; grid-template-columns: 1fr 160px 60px 28px;
+  padding: 9px 16px; background: var(--bg); border-bottom: 1px solid var(--border);
+  font-size: 10px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em;
+}
+.tbl-row {
+  display: grid; grid-template-columns: 1fr 160px 60px 28px;
+  padding: 13px 16px; align-items: center; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .1s; gap: 12px;
+}
+.tbl-row:last-child { border-bottom: none; }
+.tbl-row:hover { background: var(--bg); }
+.t-person { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.t-name { font-size: 14px; font-weight: 500; }
+.t-role { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+.t-score { font-family: 'Inter Mono', monospace; font-size: 15px; font-weight: 700; text-align: right; }
+.t-arr { color: var(--text-4); text-align: right; }
+.badge { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 9999px; font-size: 10px; font-weight: 600; border: 1px solid; }
+.bg-g { background: #f0fdf4; color: var(--green); border-color: #bbf7d0; }
+.bg-y { background: #fffbeb; color: var(--yellow); border-color: #fde68a; }
+.bg-r { background: #fef2f2; color: var(--red); border-color: #fecaca; }
+.bg-n { background: var(--bg); color: var(--text-2); border-color: var(--border-dark); }
+
+/* ── MODAL ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.4); z-index: 100;
+  overflow-y: auto; padding: 32px 20px;
+  backdrop-filter: blur(3px);
+}
+.overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+.dialog {
+  background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+  width: 100%; max-width: 640px; margin: auto;
+  box-shadow: 0 20px 48px rgba(0,0,0,.1); overflow: hidden;
+}
+.dialog-hdr {
+  padding: 18px 22px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
+}
+.dialog-title { font-size: 16px; font-weight: 600; }
+.dialog-meta  { font-size: 13px; color: var(--text-3); margin-top: 3px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dialog-close {
+  background: transparent; border: 1px solid var(--border); color: var(--text-3);
+  width: 26px; height: 26px; border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 13px; transition: all .15s; font-family: inherit;
+}
+.dialog-close:hover { background: var(--bg); color: var(--text); }
+.dialog-body { padding: 22px; max-height: 66vh; overflow-y: auto; }
+.gdc { border: 1px solid var(--border); border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+.gdc-top { padding: 9px 14px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.gdc-title { font-size: 13px; font-weight: 600; }
+.gdc-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; }
+.gdc-row { display: grid; grid-template-columns: 60px 1fr; gap: 10px; align-items: start; }
+.gdc-lbl { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); padding-top: 2px; }
+.gdc-val { font-size: 13px; line-height: 1.6; }
+.sep { height: 1px; background: var(--border); margin: 14px 0; }
+.empty { text-align: center; padding: 52px 24px; }
+.empty-ico { font-size: 32px; opacity: .25; margin-bottom: 12px; }
+.empty-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.empty-desc { font-size: 13px; color: var(--text-3); }
+.mono { font-family: 'Inter Mono', monospace; }
+
+@media (max-width: 640px) {
+  .g3 { grid-template-columns: 1fr; }
+  .res-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .tbl-hdr { display: none; }
+  .tbl-row { grid-template-columns: 1fr auto; }
+  .tbl-row > :nth-child(2), .tbl-row > :nth-child(4) { display: none; }
+  .score-banner { flex-direction: column; text-align: center; }
+  .sc-sep { width: 60px; height: 1px; }
+  .brand-name { display: none; }
+}
+
+/* LOGIN */
+#login-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #fff;
+  display: flex; align-items: center; justify-content: center;
+}
+#login-box {
+  background: #fff; border: 1px solid #e4e4e7;
+  border-radius: 12px; width: 366px;
+  overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,.08);
+}
+#login-head {
+  background: #fafafa; border-bottom: 1px solid #e4e4e7;
+  padding: 24px 20px 24px;
+  display: flex; align-items: center; justify-content: center;
+}
+#login-tabs {
+  border-bottom: 1px solid #e4e4e7;
+  background: #fff; padding: 12px 20px 10px;
+}
+#login-tabs-inner {
+  display: flex; align-items: center; justify-content: center;
+  height: 24px; border: 1px solid #e4e4e7;
+  border-radius: 9999px; overflow: hidden;
+  width: fit-content; margin: 0 auto;
+}
+.ltab {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 130px; height: 100%; border: none; border-radius: 0;
+  font-size: 12px; font-weight: 500; background: transparent;
+  color: #71717a; cursor: pointer; font-family: inherit;
+  transition: all .15s; white-space: nowrap;
+}
+.ltab .ltab-inner { display: contents; }
+.ltab:hover { background: #f4f4f5; color: #111; }
+.ltab.on { background: #18181b; color: #fff; font-weight: 600; }
+#login-body { padding: 16px 20px 20px; }
+.lfield { margin-bottom: 16px; }
+.lfield label {
+  display: block; font-size: 10px; font-weight: 700;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 6px;
+}
+.lfield input {
+  width: 100%; border: 1px solid var(--border-dark); border-radius: 6px;
+  padding: 8px 11px; font-size: 14px; font-family: inherit;
+  color: var(--foreground); background: var(--white); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.lfield input::placeholder { color: var(--text-4); }
+.lfield input:focus { border-color: var(--text); box-shadow: 0 0 0 2px rgba(9,9,11,.06); }
+.login-btn-style {
+  width: 100%; padding: 10px; font-size: 14px; font-weight: 600;
+  background: #111; color: #fff; border: none; border-radius: 8px;
+  cursor: pointer; font-family: inherit; margin-top: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  transition: background .15s;
+}
+.login-btn-style:hover { background: #333; }
+#login-foot {
+  text-align: center; margin-top: 16px;
+  font-size: 13px; color: #a3a3a3;
+}
+#login-foot a { color: #111; font-weight: 500; text-decoration: underline; cursor: pointer; }
+#login-lerr {
+  background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px;
+  padding: 8px 12px; font-size: 12px; color: #dc2626;
+  margin-bottom: 12px; display: none;
+}
+
+/* PROFILE */
+.profile-wrap { position: relative; }
+.profile-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 10px 5px 6px;
+  cursor: pointer; font-family: inherit; font-size: 13px;
+  font-weight: 500; color: var(--text); transition: background .15s;
+}
+.profile-btn:hover { background: var(--muted); }
+.profile-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #18181b; color: #fff;
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.profile-name { max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.profile-dropdown {
+  display: none; position: absolute; top: calc(100% + 6px); right: 0;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  min-width: 140px; overflow: hidden; z-index: 50;
+}
+.profile-dropdown.open { display: block; }
+.profile-dropdown-item {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 9px 14px;
+  background: transparent; border: none;
+  font-family: inherit; font-size: 13px; font-weight: 500;
+  color: var(--text); cursor: pointer; text-align: left;
+  transition: background .15s;
+}
+.profile-dropdown-item:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+
+
+
+
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="brand">
+      <svg width="184" height="28" viewBox="0 0 181 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M40.8594 16.0028V7.27557H44.1321C44.8026 7.27557 45.3651 7.40057 45.8196 7.65057C46.277 7.90057 46.6222 8.24432 46.8551 8.68182C47.0909 9.11648 47.2088 9.6108 47.2088 10.1648C47.2088 10.7244 47.0909 11.2216 46.8551 11.6563C46.6193 12.0909 46.2713 12.4332 45.8111 12.6832C45.3509 12.9304 44.7841 13.054 44.1108 13.054H41.9418V11.7543H43.8977C44.2898 11.7543 44.6108 11.6861 44.8608 11.5497C45.1108 11.4134 45.2955 11.2259 45.4148 10.9872C45.5369 10.7486 45.598 10.4744 45.598 10.1648C45.598 9.85511 45.5369 9.58239 45.4148 9.34659C45.2955 9.1108 45.1094 8.92756 44.8565 8.79688C44.6065 8.66335 44.2841 8.59659 43.8892 8.59659H42.4403V16.0028H40.8594Z" fill="black"/>
+<path d="M48.582 16.0028V7.27557H54.2582V8.60085H50.163V10.9702H53.9641V12.2955H50.163V14.6776H54.2923V16.0028H48.582Z" fill="black"/>
+<path d="M55.8711 16.0028V7.27557H59.1438C59.8143 7.27557 60.3768 7.39205 60.8313 7.625C61.2887 7.85795 61.6339 8.18466 61.8668 8.60511C62.1026 9.02273 62.2205 9.50994 62.2205 10.0668C62.2205 10.6264 62.1012 11.1122 61.8626 11.5241C61.6268 11.9332 61.2788 12.25 60.8185 12.4744C60.3583 12.696 59.793 12.8068 59.1225 12.8068H56.7915V11.4943H58.9094C59.3015 11.4943 59.6225 11.4403 59.8725 11.3324C60.1225 11.2216 60.3072 11.0611 60.4265 10.8509C60.5487 10.6378 60.6097 10.3764 60.6097 10.0668C60.6097 9.7571 60.5487 9.4929 60.4265 9.27415C60.3043 9.05256 60.1183 8.88494 59.8683 8.77131C59.6183 8.65483 59.2958 8.59659 58.9009 8.59659H57.4521V16.0028H55.8711ZM60.3796 12.0483L62.5401 16.0028H60.7759L58.6538 12.0483H60.3796Z" fill="black"/>
+<path d="M63.6758 16.0028V7.27557H69.2667V8.60085H65.2567V10.9702H68.8832V12.2955H65.2567V16.0028H63.6758Z" fill="black"/>
+<path d="M78.5053 11.6392C78.5053 12.5795 78.3292 13.3849 77.9769 14.0554C77.6275 14.723 77.1502 15.2344 76.5451 15.5895C75.9428 15.9446 75.2596 16.1222 74.4954 16.1222C73.7312 16.1222 73.0465 15.9446 72.4414 15.5895C71.8391 15.2315 71.3619 14.7188 71.0096 14.0511C70.6602 13.3807 70.4854 12.5767 70.4854 11.6392C70.4854 10.6989 70.6602 9.89489 71.0096 9.22727C71.3619 8.55682 71.8391 8.04403 72.4414 7.68892C73.0465 7.33381 73.7312 7.15625 74.4954 7.15625C75.2596 7.15625 75.9428 7.33381 76.5451 7.68892C77.1502 8.04403 77.6275 8.55682 77.9769 9.22727C78.3292 9.89489 78.5053 10.6989 78.5053 11.6392ZM76.9158 11.6392C76.9158 10.9773 76.8121 10.419 76.6048 9.96449C76.4002 9.5071 76.1161 9.16193 75.7525 8.92898C75.3889 8.69318 74.9698 8.57528 74.4954 8.57528C74.021 8.57528 73.6019 8.69318 73.2383 8.92898C72.8746 9.16193 72.5891 9.5071 72.3817 9.96449C72.1772 10.419 72.0749 10.9773 72.0749 11.6392C72.0749 12.3011 72.1772 12.8608 72.3817 13.3182C72.5891 13.7727 72.8746 14.1179 73.2383 14.3537C73.6019 14.5866 74.021 14.7031 74.4954 14.7031C74.9698 14.7031 75.3889 14.5866 75.7525 14.3537C76.1161 14.1179 76.4002 13.7727 76.6048 13.3182C76.8121 12.8608 76.9158 12.3011 76.9158 11.6392Z" fill="black"/>
+<path d="M80 16.0028V7.27557H83.2727C83.9432 7.27557 84.5057 7.39205 84.9602 7.625C85.4176 7.85795 85.7628 8.18466 85.9957 8.60511C86.2315 9.02273 86.3494 9.50994 86.3494 10.0668C86.3494 10.6264 86.2301 11.1122 85.9915 11.5241C85.7557 11.9332 85.4077 12.25 84.9474 12.4744C84.4872 12.696 83.9219 12.8068 83.2514 12.8068H80.9205V11.4943H83.0384C83.4304 11.4943 83.7514 11.4403 84.0014 11.3324C84.2514 11.2216 84.4361 11.0611 84.5554 10.8509C84.6776 10.6378 84.7386 10.3764 84.7386 10.0668C84.7386 9.7571 84.6776 9.4929 84.5554 9.27415C84.4332 9.05256 84.2472 8.88494 83.9972 8.77131C83.7472 8.65483 83.4247 8.59659 83.0298 8.59659H81.581V16.0028H80ZM84.5085 12.0483L86.669 16.0028H84.9048L82.7827 12.0483H84.5085Z" fill="black"/>
+<path d="M87.8047 7.27557H89.7393L92.3303 13.5994H92.4325L95.0234 7.27557H96.9581V16.0028H95.4411V10.0071H95.3601L92.9482 15.9773H91.8146L89.4027 9.99432H89.3217V16.0028H87.8047V7.27557Z" fill="black"/>
+<path d="M99.8004 16.0028H98.1129L101.185 7.27557H103.137L106.214 16.0028H104.526L102.195 9.06534H102.127L99.8004 16.0028ZM99.8558 12.581H104.458V13.8509H99.8558V12.581Z" fill="black"/>
+<path d="M114.535 7.27557V16.0028H113.129L109.017 10.0582H108.944V16.0028H107.363V7.27557H108.778L112.886 13.2244H112.963V7.27557H114.535Z" fill="black"/>
+<path d="M121.001 9.67472C120.961 9.30256 120.793 9.01278 120.498 8.8054C120.205 8.59801 119.825 8.49432 119.356 8.49432C119.026 8.49432 118.744 8.54403 118.508 8.64347C118.272 8.7429 118.092 8.87784 117.967 9.0483C117.842 9.21875 117.778 9.41335 117.775 9.6321C117.775 9.81392 117.816 9.97159 117.898 10.1051C117.984 10.2386 118.099 10.3523 118.244 10.446C118.388 10.5369 118.549 10.6136 118.725 10.6761C118.901 10.7386 119.079 10.7912 119.258 10.8338L120.076 11.0384C120.406 11.1151 120.722 11.2188 121.026 11.3494C121.333 11.4801 121.607 11.6449 121.849 11.8438C122.093 12.0426 122.286 12.2827 122.428 12.5639C122.57 12.8452 122.641 13.1747 122.641 13.5526C122.641 14.0639 122.511 14.5142 122.249 14.9034C121.988 15.2898 121.61 15.5923 121.116 15.8111C120.624 16.027 120.029 16.1349 119.33 16.1349C118.651 16.1349 118.062 16.0298 117.562 15.8196C117.065 15.6094 116.675 15.3026 116.394 14.8991C116.116 14.4957 115.965 14.0043 115.942 13.4247H117.498C117.521 13.7287 117.614 13.9815 117.779 14.1832C117.944 14.3849 118.158 14.5355 118.423 14.6349C118.69 14.7344 118.988 14.7841 119.317 14.7841C119.661 14.7841 119.962 14.733 120.221 14.6307C120.482 14.5256 120.687 14.3807 120.835 14.196C120.982 14.0085 121.058 13.7898 121.06 13.5398C121.058 13.3125 120.991 13.125 120.86 12.9773C120.729 12.8267 120.546 12.7017 120.31 12.6023C120.077 12.5 119.805 12.4091 119.492 12.3295L118.499 12.0739C117.781 11.8892 117.212 11.6094 116.795 11.2344C116.38 10.8565 116.173 10.3551 116.173 9.73011C116.173 9.21591 116.312 8.76562 116.59 8.37926C116.871 7.9929 117.254 7.69318 117.737 7.48011C118.219 7.2642 118.766 7.15625 119.377 7.15625C119.996 7.15625 120.539 7.2642 121.005 7.48011C121.474 7.69318 121.842 7.99006 122.109 8.37074C122.376 8.74858 122.513 9.18324 122.522 9.67472H121.001Z" fill="black"/>
+<path d="M128.148 16.0028H126.461L129.533 7.27557H131.485L134.561 16.0028H132.874L130.543 9.06534H130.475L128.148 16.0028ZM128.203 12.581H132.806V13.8509H128.203V12.581Z" fill="black"/>
+<path d="M140.313 9.67472C140.273 9.30256 140.106 9.01278 139.81 8.8054C139.518 8.59801 139.137 8.49432 138.668 8.49432C138.339 8.49432 138.056 8.54403 137.82 8.64347C137.585 8.7429 137.404 8.87784 137.279 9.0483C137.154 9.21875 137.09 9.41335 137.087 9.6321C137.087 9.81392 137.129 9.97159 137.211 10.1051C137.296 10.2386 137.411 10.3523 137.556 10.446C137.701 10.5369 137.862 10.6136 138.038 10.6761C138.214 10.7386 138.391 10.7912 138.57 10.8338L139.388 11.0384C139.718 11.1151 140.035 11.2188 140.339 11.3494C140.646 11.4801 140.92 11.6449 141.161 11.8438C141.406 12.0426 141.599 12.2827 141.741 12.5639C141.883 12.8452 141.954 13.1747 141.954 13.5526C141.954 14.0639 141.823 14.5142 141.562 14.9034C141.3 15.2898 140.923 15.5923 140.428 15.8111C139.937 16.027 139.342 16.1349 138.643 16.1349C137.964 16.1349 137.374 16.0298 136.874 15.8196C136.377 15.6094 135.988 15.3026 135.707 14.8991C135.428 14.4957 135.278 14.0043 135.255 13.4247H136.81C136.833 13.7287 136.927 13.9815 137.092 14.1832C137.256 14.3849 137.471 14.5355 137.735 14.6349C138.002 14.7344 138.3 14.7841 138.63 14.7841C138.974 14.7841 139.275 14.733 139.533 14.6307C139.795 14.5256 139.999 14.3807 140.147 14.196C140.295 14.0085 140.37 13.7898 140.373 13.5398C140.37 13.3125 140.303 13.125 140.173 12.9773C140.042 12.8267 139.859 12.7017 139.623 12.6023C139.39 12.5 139.117 12.4091 138.805 12.3295L137.812 12.0739C137.093 11.8892 136.525 11.6094 136.107 11.2344C135.692 10.8565 135.485 10.3551 135.485 9.73011C135.485 9.21591 135.624 8.76562 135.903 8.37926C136.184 7.9929 136.566 7.69318 137.049 7.48011C137.532 7.2642 138.079 7.15625 138.69 7.15625C139.309 7.15625 139.852 7.2642 140.317 7.48011C140.786 7.69318 141.154 7.99006 141.421 8.37074C141.688 8.74858 141.826 9.18324 141.835 9.67472H140.313Z" fill="black"/>
+<path d="M144.944 7.27557V16.0028H143.363V7.27557H144.944ZM144.156 6.34659C143.909 6.34659 143.697 6.26563 143.521 6.10369C143.348 5.93892 143.261 5.74148 143.261 5.51136C143.261 5.27841 143.349 5.08097 143.525 4.91903C143.701 4.75426 143.912 4.67188 144.156 4.67188C144.4 4.67188 144.609 4.75426 144.782 4.91903C144.958 5.08097 145.047 5.27841 145.047 5.51136C145.047 5.74148 144.958 5.93892 144.782 6.10369C144.609 6.26563 144.4 6.34659 144.156 6.34659Z" fill="black"/>
+<path d="M151.399 9.67472C151.359 9.30256 151.192 9.01278 150.896 8.8054C150.604 8.59801 150.223 8.49432 149.754 8.49432C149.425 8.49432 149.142 8.54403 148.906 8.64347C148.67 8.7429 148.49 8.87784 148.365 9.0483C148.24 9.21875 148.176 9.41335 148.173 9.6321C148.173 9.81392 148.214 9.97159 148.297 10.1051C148.382 10.2386 148.497 10.3523 148.642 10.446C148.787 10.5369 148.947 10.6136 149.124 10.6761C149.3 10.7386 149.477 10.7912 149.656 10.8338L150.474 11.0384C150.804 11.1151 151.121 11.2188 151.425 11.3494C151.732 11.4801 152.006 11.6449 152.247 11.8438C152.491 12.0426 152.685 12.2827 152.827 12.5639C152.969 12.8452 153.04 13.1747 153.04 13.5526C153.04 14.0639 152.909 14.5142 152.648 14.9034C152.386 15.2898 152.009 15.5923 151.514 15.8111C151.023 16.027 150.428 16.1349 149.729 16.1349C149.05 16.1349 148.46 16.0298 147.96 15.8196C147.463 15.6094 147.074 15.3026 146.793 14.8991C146.514 14.4957 146.364 14.0043 146.341 13.4247H147.896C147.919 13.7287 148.013 13.9815 148.178 14.1832C148.342 14.3849 148.557 14.5355 148.821 14.6349C149.088 14.7344 149.386 14.7841 149.716 14.7841C150.06 14.7841 150.361 14.733 150.619 14.6307C150.881 14.5256 151.085 14.3807 151.233 14.196C151.381 14.0085 151.456 13.7898 151.459 13.5398C151.456 13.3125 151.389 13.125 151.259 12.9773C151.128 12.8267 150.945 12.7017 150.709 12.6023C150.476 12.5 150.203 12.4091 149.891 12.3295L148.898 12.0739C148.179 11.8892 147.611 11.6094 147.193 11.2344C146.778 10.8565 146.571 10.3551 146.571 9.73011C146.571 9.21591 146.71 8.76562 146.989 8.37926C147.27 7.9929 147.652 7.69318 148.135 7.48011C148.618 7.2642 149.165 7.15625 149.776 7.15625C150.395 7.15625 150.938 7.2642 151.403 7.48011C151.872 7.69318 152.24 7.99006 152.507 8.37074C152.774 8.74858 152.912 9.18324 152.92 9.67472H151.399Z" fill="black"/>
+<path d="M154.066 8.60085V7.27557H161.029V8.60085H158.331V16.0028H156.763V8.60085H154.066Z" fill="black"/>
+<path d="M162.437 16.0028H160.75L163.822 7.27557H165.774L168.85 16.0028H167.163L164.832 9.06534H164.764L162.437 16.0028ZM162.493 12.581H167.095V13.8509H162.493V12.581Z" fill="black"/>
+<path d="M177.172 7.27557V16.0028H175.766L171.653 10.0582H171.581V16.0028H170V7.27557H171.415L175.523 13.2244H175.599V7.27557H177.172Z" fill="black"/>
+<path d="M180.475 7.27557V16.0028H178.895V7.27557H180.475Z" fill="black"/>
+<path d="M32.1719 24.8601L27.931 20.473H8.77415C3.92832 20.473 4.71098e-08 16.5447 0 11.6989V8.77415C0 3.92832 3.92832 1.41321e-07 8.77415 0H23.3977C28.2436 0 32.1719 3.92832 32.1719 8.77415V24.8601Z" fill="url(#paint0_linear_2509_5014)"/>
+<path d="M6 15.9222L9.61967 5.97112C9.7996 5.49116 10.0801 5.13386 10.4611 4.89922C10.8527 4.65391 11.2919 4.53125 11.7788 4.53125C12.2656 4.53125 12.7049 4.64857 13.0965 4.88322C13.4881 5.1072 13.7685 5.4645 13.9379 5.95512L17.5734 15.9222H15.0809L14.3348 13.6664H9.15928L8.38136 15.9222H6ZM9.84193 11.6506H13.668L12.0645 6.73905C12.0434 6.66439 12.0063 6.61106 11.9534 6.57907C11.9111 6.54707 11.8582 6.53107 11.7947 6.53107C11.7311 6.53107 11.6782 6.5524 11.6359 6.59507C11.5936 6.62706 11.5618 6.67506 11.5406 6.73905L9.84193 11.6506Z" fill="white"/>
+<path d="M18.8281 15.9222V13.8719H20.9122V6.58163H18.8281V4.53125H25.3615V6.58163H23.2774V13.8719H25.3615V15.9222H18.8281Z" fill="white"/>
+<defs>
+<linearGradient id="paint0_linear_2509_5014" x1="6.50939" y1="-9.27069" x2="26.4506" y2="16.8675" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F9277E"/>
+<stop offset="0.245192" stop-color="#C347F5"/>
+<stop offset="0.639423" stop-color="#F32F19"/>
+<stop offset="1" stop-color="#FFAE43"/>
+</linearGradient>
+</defs>
+</svg>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+
+      <div class="profile-wrap" id="profile-wrap">
+        <button class="profile-btn" id="profile-btn" onclick="toggleProfile(event)">
+          <div class="profile-avatar" id="profile-avatar">?</div>
+          <span class="profile-name" id="profile-name">Profil</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="profile-dropdown" id="profile-dropdown">
+          <button class="profile-dropdown-item" onclick="doLogout()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Çıkış Yap
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     EMPLOYEE PAGE
+════════════════════════════════════════ -->
+<div class="page active" id="page-employee">
+
+  <!-- Grey hero — title + personal info card -->
+  <div class="hero">
+    <div class="hero-inner">
+      <h1 id="hero-greeting" style="font-size:24px;font-weight:600;letter-spacing:-0.4px;margin-bottom:4px">Merhaba!</h1>
+      <p>Hedeflerini ve neler yaptığını gir; AI mevcut performansını değerlendirerek önerilerde bulunsun.</p>
+
+      <div class="card" style="margin-top:24px;margin-bottom:0">
+        <div class="card-top-bar">Kişisel Bilgiler</div>
+        <div class="card-inner">
+          <div style="display:grid;grid-template-columns:1fr 1fr 0.5fr auto;gap:12px;align-items:end">
+            <div class="field">
+              <label>İsim</label>
+              <input type="text" id="e-first" placeholder="Örn: Cenk">
+            </div>
+            <div class="field">
+              <label>Soyisim</label>
+              <input type="text" id="e-last" placeholder="Örn: Yılmaz">
+            </div>
+            <div class="field">
+              <label>Yıl</label>
+              <select id="e-period"><option value="2026">2026</option></select>
+            </div>
+            <button class="btn btn-primary" onclick="tryAutoLoad()" style="height:36px;width:auto;padding:0 20px;font-size:14px;background:#171717;border-color:#171717" disabled>Filtrele</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- White content below -->
+  <div class="content">
+
+    <!-- Hedefler -->
+    <div class="sec-row" style="margin-top:-2px">
+      <div>
+        <h2>Hedefler</h2>
+        <p>Her hedef için ne planladığını ve ne yaptığını açıkla.</p>
+      </div>
+      <button class="btn btn-add" onclick="addGoal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Hedef Ekle
+      </button>
+    </div>
+    <div id="goals-wrap"></div>
+
+    <div class="err" id="e-err"></div>
+
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-add" onclick="saveGoals()" style="height:48px;padding:0 24px;font-size:14px;border-radius:10px;flex:1">Hedeflerimi Kaydet</button>
+      <button class="btn btn-primary" id="eval-btn" onclick="doEval()" style="flex:2">
+        AI ile değerlendir &nbsp;→
+      </button>
+    </div>
+
+    <div class="loading" id="spin">
+      <div class="spinner"></div>
+      <p>AI değerlendiriyor...</p>
+    </div>
+
+    <!-- Result -->
+    <div class="result" id="result">
+      <div class="score-banner">
+        <div class="sc-num" id="sc-val">--</div>
+        <div class="sc-sep"></div>
+        <div class="sc-info">
+          <div class="si-name"   id="r-name">--</div>
+          <div class="si-period" id="r-period">--</div>
+          <div class="si-badge"  id="r-badge"></div>
+        </div>
+      </div>
+      <div class="res-sec">
+        <div class="res-lbl">Genel Değerlendirme</div>
+        <div class="res-text" id="r-ozet"></div>
+      </div>
+      <div class="res-grid">
+        <div class="res-sec">
+          <div class="res-lbl">Güçlü Yönler</div>
+          <div class="res-text" id="r-guclu"></div>
+        </div>
+        <div class="res-sec">
+          <div class="res-lbl">Gelişim Alanları</div>
+          <div class="res-text" id="r-gelisim"></div>
+        </div>
+      </div>
+      <div class="card" id="hedef-card" style="display:none">
+        <div class="card-inner">
+          <div class="card-title" style="margin-bottom:6px">Hedef Değerlendirmeleri</div>
+          <div id="hedef-rows"></div>
+        </div>
+      </div>
+      <div class="res-sec" style="margin-top:4px">
+        <div class="res-lbl">Sonraki Dönem Önerileri</div>
+        <div class="res-text" id="r-oneri"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /page-employee -->
+
+
+<!-- ═══════════════════════════════════════
+     MANAGER PAGE
+════════════════════════════════════════ -->
+<div class="page" id="page-manager">
+
+  <!-- Gate -->
+  <div id="mgr-gate">
+    <div class="mgr-content">
+      <div class="gate-box">
+        <div class="gate-card">
+          <div style="font-size:28px;margin-bottom:14px">🔒</div>
+          <div style="font-size:17px;font-weight:600;margin-bottom:4px">Yönetici Girişi</div>
+          <div style="font-size:14px;color:var(--text-3);margin-bottom:20px">Bu alan yalnızca yöneticiler içindir.</div>
+          <div class="field" style="margin-bottom:10px">
+            <label>Şifre</label>
+            <input type="password" id="pwd-inp" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPwd()">
+          </div>
+          <button class="btn btn-primary" onclick="checkPwd()">Giriş Yap</button>
+          <div class="err" id="pwd-err" style="margin-top:10px;margin-bottom:0">Hatalı şifre. Tekrar deneyin.</div>
+          <p style="font-size:12px;color:var(--text-4);margin-top:16px;text-align:center">
+            Varsayılan: <span class="mono" style="background:var(--bg);padding:1px 7px;border-radius:4px;font-size:11px;border:1px solid var(--border)">admin123</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="mgr-dash" style="display:none">
+    <div class="mgr-content">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+        <div>
+          <h1 style="font-size:22px;font-weight:600;letter-spacing:-0.4px">Ekip Genel Bakış</h1>
+          <p style="font-size:14px;color:var(--text-3);margin-top:3px">Tüm ekip değerlendirme sonuçları — 2026</p>
+        </div>
+        <button class="btn btn-sm" onclick="loadTeam()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.08-4"/></svg>
+          Yenile
+        </button>
+      </div>
+      <div class="stats-grid" id="stats"></div>
+      <div id="team-list"></div>
+    </div>
+  </div>
+
+</div><!-- /page-manager -->
+
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="dialog">
+    <div class="dialog-hdr">
+      <div>
+        <div class="dialog-title" id="m-title">--</div>
+        <div class="dialog-meta"  id="m-meta"></div>
+      </div>
+      <button class="dialog-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="dialog-body" id="m-body"></div>
+  </div>
+</div>
+
+
+<script>
+// ── STORAGE ──
+function makeKey(name) {
+  return 'user-' + name
+    .replace(/İ/g,'i').replace(/I/g,'i').replace(/Ğ/g,'g').replace(/Ü/g,'u')
+    .replace(/Ş/g,'s').replace(/Ö/g,'o').replace(/Ç/g,'c')
+    .replace(/ı/g,'i').replace(/ğ/g,'g').replace(/ü/g,'u')
+    .replace(/ş/g,'s').replace(/ö/g,'o').replace(/ç/g,'c')
+    .toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+async function storageSave(key, value, shared) {
+  try { if (window.storage) { await window.storage.set(key, value, shared||false); return; } } catch(e) {}
+  try { localStorage.setItem(key, value); } catch(e) {}
+}
+async function storageLoad(key, shared) {
+  try { if (window.storage) { var r = await window.storage.get(key, shared||false); return r ? r.value : null; } } catch(e) {}
+  try { return localStorage.getItem(key); } catch(e) { return null; }
+}
+async function tSave(r) { await storageSave('okr-v2', JSON.stringify(r), true); }
+async function tLoad() {
+  try { var r = await storageLoad('okr-v2', true); return r ? JSON.parse(r) : []; } catch(e) { return []; }
+}
+async function personalSave(name, data) { await storageSave(makeKey(name), JSON.stringify(data)); }
+async function personalLoad(name) {
+  try { var r = await storageLoad(makeKey(name)); return r ? JSON.parse(r) : null; } catch(e) { return null; }
+}
+
+// ── LOGIN ──
+function lSwitchTab(t) {
+  document.getElementById('lf-l').style.display = t==='l' ? 'block' : 'none';
+  document.getElementById('lf-r').style.display = t==='r' ? 'block' : 'none';
+  document.getElementById('login-lerr').style.display = 'none';
+}
+function lErr(m) { var e=document.getElementById('login-lerr'); e.textContent=m; e.style.display='block'; }
+async function lLogin() {
+  var u = document.getElementById('l-user').value.trim();
+  var p = document.getElementById('l-pass').value;
+  if (!u||!p) return lErr('Kullanıcı adı ve şifre gerekli.');
+  var stored = null;
+  try { var r = await storageLoad('auth-'+makeKey(u)); stored = r ? JSON.parse(r) : null; } catch(e){}
+  if (!stored) return lErr('Kullanıcı bulunamadı. Önce kayıt olun.');
+  if (stored.password !== p) return lErr('Şifre hatalı.');
+  sessionStorage.setItem('lu', JSON.stringify({u:u, f:stored.first, l:stored.last}));
+  lDone(stored.first, stored.last);
+}
+async function lRegister() {
+  var f = document.getElementById('r-first').value.trim();
+  var l = document.getElementById('r-last').value.trim();
+  var u = document.getElementById('r-user').value.trim();
+  var p = document.getElementById('r-pass').value;
+  if (!f||!l) return lErr('İsim ve soyisim gerekli.');
+  if (!u) return lErr('Kullanıcı adı gerekli.');
+  if (!p||p.length<4) return lErr('Şifre en az 4 karakter olmalı.');
+  var existing = null;
+  try { var r = await storageLoad('auth-'+makeKey(u)); existing = r ? JSON.parse(r) : null; } catch(e){}
+  if (existing) return lErr('Bu kullanıcı adı zaten kayıtlı.');
+  await storageSave('auth-'+makeKey(u), JSON.stringify({first:f, last:l, password:p}));
+  sessionStorage.setItem('lu', JSON.stringify({u:u, f:f, l:l}));
+  lDone(f, l);
+}
+function lDone(first, last) {
+  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('e-first').value = first;
+  document.getElementById('e-last').value  = last;
+  setProfileName(first, last);
+  var greeting = document.getElementById('hero-greeting');
+  if (greeting) greeting.textContent = 'Merhaba, ' + first + ' ' + last + '!';
+}
+
+// ── AUTO-LOAD ──
+async function tryAutoLoad() {
+  var first = document.getElementById('e-first').value.trim();
+  var last  = document.getElementById('e-last').value.trim();
+  if (!first||!last) return showErr('Lütfen isim ve soyisim girin.');
+  var name = first + ' ' + last;
+  var data = await personalLoad(name);
+  if (!data) return showErr('Bu isimde kayıtlı veri bulunamadı.');
+  document.getElementById('goals-wrap').innerHTML = '';
+  gcnt = 0;
+  data.goals.forEach(function(g) { addGoal(g); });
+  if (data.result) restoreResult(name, data.period, data.score, data.result);
+  showToast('Kayıtlı veriler yüklendi ✓');
+}
+
+// ── TOAST ──
+function showToast(msg, type) {
+  var t = document.getElementById('toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = 'position:fixed;top:24px;right:24px;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .3s;box-shadow:0 4px 12px rgba(0,0,0,.12)';
+    document.body.appendChild(t);
+  }
+  t.style.background = (!type||type==='success') ? 'var(--green)' : 'var(--text)';
+  t.style.color = 'white';
+  t.textContent = msg;
+  t.style.opacity = '1';
+  setTimeout(function() { t.style.opacity='0'; }, 2500);
+}
+
+// ── RESTORE RESULT ──
+function restoreResult(name, period, sc, r) {
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('sc-val').textContent   = sc;
+  document.getElementById('r-name').textContent   = name;
+  document.getElementById('r-period').textContent = period;
+  document.getElementById('r-badge').textContent  = bi(sc)[0];
+  document.getElementById('r-ozet').textContent    = r.ozet||'';
+  document.getElementById('r-guclu').textContent   = r.guclu_yonler||'';
+  document.getElementById('r-gelisim').textContent = r.gelisim_alanlari||'';
+  document.getElementById('r-oneri').textContent   = r.sonraki_donem_onerileri||'';
+  if (r.hedef_notlari && r.hedef_notlari.length) {
+    document.querySelectorAll('[id^="go-"]').forEach(function(el, i) {
+      var n = el.id.split('-')[1];
+      var gn = r.hedef_notlari[i]; if (!gn) return;
+      var sc2 = document.getElementById('gsc-'+n);
+      if (sc2) { sc2.textContent=gn.not; sc2.style.color=col(gn.not); }
+    });
+    document.getElementById('hedef-card').style.display = 'block';
+    document.getElementById('hedef-rows').innerHTML = r.hedef_notlari.map(function(g) {
+      var c2=col(g.not);
+      return '<div class="gsr"><div class="gsr-l"><div class="gsr-name">'+g.baslik+'</div><div class="gsr-cmt">'+g.yorum+'</div></div>'+
+        '<div class="pbar"><div class="pfill" style="width:'+g.not+'%;background:'+c2+'"></div></div>'+
+        '<div class="gsr-sc" style="color:'+c2+'">'+g.not+'</div></div>';
+    }).join('');
+  }
+}
+
+// ── PAGE SWITCH ──
+let gcnt = 0, mgrOk = false;
+const PWD = 'admin123';
+
+function switchPage(p) {
+  document.querySelectorAll('.page').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.ntab').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('tab-'+(p==='employee'?'emp':'mgr')).classList.add('active');
+  if (p==='manager' && mgrOk) loadTeam();
+}
+
+function checkPwd() {
+  if (document.getElementById('pwd-inp').value === PWD) {
+    mgrOk = true;
+    document.getElementById('mgr-gate').style.display = 'none';
+    document.getElementById('mgr-dash').style.display = 'block';
+    loadTeam();
+  } else {
+    document.getElementById('pwd-err').style.display = 'block';
+  }
+}
+
+// ── GOAL HELPERS ──
+function addGoal(d) {
+  gcnt++;
+  var n = gcnt;
+  var el = document.createElement('div');
+  el.className = 'goal-card'; el.id = 'gc-'+n;
+  var vObj  = d ? esc(d.objective) : '';
+  var vKr1  = d && d.kr ? esc(d.kr[0]||'') : '';
+  var vKr2  = d && d.kr ? esc(d.kr[1]||'') : '';
+  var vKr3  = d && d.kr ? esc(d.kr[2]||'') : '';
+  var vDone = d ? esc(d.done) : '';
+  el.innerHTML =
+    '<div class="goal-top">'+
+      '<div class="goal-label">Hedef-'+n+'</div>'+
+      '<div class="goal-actions">'+
+        '<div class="goal-score" id="gsb-'+n+'" style="display:block;color:var(--text)">Skor: <span id="gsc-'+n+'" style="color:var(--text)">0</span>/100</div>'+
+        '<div style="width:1px;height:16px;background:var(--border-dark);flex-shrink:0"></div>'+
+        '<button class="rm-btn" onclick="removeGoal('+n+')">Kaldır</button>'+
+        '<div style="width:1px;height:16px;background:var(--border-dark);flex-shrink:0"></div>'+
+        '<button class="toggle-btn" onclick="toggleGoal('+n+')">'+
+          '<svg id="ti-'+n+'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;transform:rotate(180deg)" data-open="true"><polyline points="6 9 12 15 18 9"/></svg>'+
+        '</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="goal-body" id="gb-'+n+'">'+
+      '<div class="okr-field"><div class="okr-label">Objective</div>'+
+        '<input type="text" id="go-'+n+'" placeholder="Örn: Müşteri memnuniyetini artırmak." value="'+vObj+'"></div>'+
+      '<div class="okr-field"><div class="okr-label">Key Result-1</div>'+
+        '<input type="text" id="kr1-'+n+'" placeholder="Hedefin detayını yazabilirsin." value="'+vKr1+'"></div>'+
+      '<div class="okr-field"><div class="okr-label">Key Result-2</div>'+
+        '<input type="text" id="kr2-'+n+'" placeholder="Hedefin detayını yazabilirsin." value="'+vKr2+'"></div>'+
+      '<div class="okr-field"><div class="okr-label">Key Result-3</div>'+
+        '<input type="text" id="kr3-'+n+'" placeholder="Hedefin detayını yazabilirsin." value="'+vKr3+'"></div>'+
+      '<div class="okr-field" style="border-bottom:none;padding:10px 16px 0">'+
+        '<div class="okr-label">Neler Yaptın?</div>'+
+        '<textarea id="gdo-'+n+'" placeholder="Bu hedefe ulaşmak için yaptıklarını açıkla..." style="margin-bottom:16px">'+vDone+'</textarea>'+
+      '</div>'+
+    '</div>';
+  document.getElementById('goals-wrap').appendChild(el);
+}
+
+function removeGoal(n) { var e=document.getElementById('gc-'+n); if(e) e.remove(); }
+
+function toggleGoal(n) {
+  var body=document.getElementById('gb-'+n);
+  var icon=document.getElementById('ti-'+n);
+  var isOpen=icon.dataset.open==='true';
+  if (isOpen) { body.style.display='none'; icon.style.transform='rotate(0deg)'; icon.dataset.open='false'; }
+  else { body.style.display='block'; icon.style.transform='rotate(180deg)'; icon.dataset.open='true'; }
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function getGoals() {
+  var g=[];
+  document.querySelectorAll('[id^="go-"]').forEach(function(el) {
+    var n=el.id.split('-')[1];
+    var objective=el.value.trim();
+    var kr=['kr1','kr2','kr3'].map(function(k){return (document.getElementById(k+'-'+n)||{value:''}).value.trim();}).filter(Boolean);
+    var done=(document.getElementById('gdo-'+n)||{value:''}).value.trim();
+    if(objective) g.push({objective:objective, kr:kr, done:done, _n:n});
+  });
+  return g;
+}
+
+function col(s) { return s>=75?'var(--green)':s>=50?'var(--yellow)':'var(--red)'; }
+function bi(s) {
+  if(s>=85) return ['🌟 Olağanüstü','bg-g'];
+  if(s>=70) return ['✅ Hedeflerin Üzerinde','bg-g'];
+  if(s>=55) return ['👍 Hedefleri Karşılıyor','bg-n'];
+  if(s>=40) return ['⚠️ Gelişim Gerekli','bg-y'];
+  return ['🔴 Hedeflerin Altında','bg-r'];
+}
+function avStyle(i) {
+  var bg=['#f0f9ff','#fef9c3','#dcfce7','#fce7f3','#ede9fe','#ffedd5','#f0fdf4','#fdf2f8'];
+  var tc=['#0369a1','#854d0e','#15803d','#9d174d','#5b21b6','#9a3412','#047857','#86198f'];
+  return {bg:bg[i%bg.length],tc:tc[i%tc.length]};
+}
+function ini(n) { var p=n.trim().split(' '); return (p[0][0]+(p[1]?p[1][0]:'')).toUpperCase(); }
+function showErr(m) {
+  var b=document.getElementById('e-err'); b.textContent=m; b.style.display='block';
+  setTimeout(function(){b.style.display='none';},5000);
+}
+
+// ── SAVE GOALS ──
+async function saveGoals() {
+  var first=document.getElementById('e-first').value.trim();
+  var last=document.getElementById('e-last').value.trim();
+  var goals=getGoals();
+  var name=(first+' '+last).trim();
+  if(!first||!last) return showErr('Lütfen isim ve soyisim girin.');
+  if(!goals.length) return showErr('En az bir hedef ekleyin.');
+  var goalsSave=goals.map(function(g){return {objective:g.objective,kr:g.kr,done:g.done};});
+  var existing=await personalLoad(name)||{};
+  existing.goals=goalsSave;
+  if(!existing.period) existing.period=document.getElementById('e-period').value;
+  await personalSave(name,existing);
+  showToast('Hedefler kaydedildi ✓');
+}
+
+// ── EVALUATE ──
+async function doEval() {
+  var first=document.getElementById('e-first').value.trim();
+  var last=document.getElementById('e-last').value.trim();
+  var period=document.getElementById('e-period').value;
+  var goals=getGoals();
+  var name=(first+' '+last).trim();
+  if(!first) return showErr('Lütfen isminizi girin.');
+  if(!last)  return showErr('Lütfen soyisminizi girin.');
+  if(!goals.length) return showErr('En az bir hedef ekleyin.');
+  if(goals.some(function(g){return !g.done;})) return showErr('Tüm hedefler için "Neler Yaptın?" alanını doldurun.');
+  var btn=document.getElementById('eval-btn');
+  btn.disabled=true;
+  document.getElementById('spin').style.display='flex';
+  document.getElementById('result').style.display='none';
+  document.getElementById('e-err').style.display='none';
+  var gt=goals.map(function(g,i){
+    var krText=g.kr.length?g.kr.map(function(k,j){return 'KR'+(j+1)+': '+k;}).join('\n'):'';
+    return 'Hedef '+(i+1)+':\nObjective: '+g.objective+(krText?'\n'+krText:'')+'\nYapılanlar: '+g.done;
+  }).join('\n\n');
+  var prompt='Çalışan: '+name+'\nDönem: '+period+'\n\n'+gt+'\n\nDeğerlendirmeyi bu JSON formatında döndür (başka hiçbir şey yazma):\n{"genel_not":75,"ozet":"...","guclu_yonler":"...","gelisim_alanlari":"...","hedef_notlari":[{"baslik":"...","not":80,"yorum":"..."}],"sonraki_donem_onerileri":"..."}';
+  try {
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,
+        system:'Sen İK uzmanısın. SADECE geçerli JSON döndür. { ile başla } ile bitir. Markdown kullanma.',
+        messages:[{role:'user',content:prompt}]})
+    });
+    if(!res.ok){var t=await res.text();throw new Error('HTTP '+res.status+': '+t.substring(0,200));}
+    var data=await res.json();
+    if(data.error) throw new Error(data.error.message);
+    var raw=(data.content||[]).map(function(c){return c.text||'';}).join('').trim();
+    if(!raw) throw new Error('Boş yanıt.');
+    var clean=raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+    var r=JSON.parse(clean);
+    document.getElementById('spin').style.display='none';
+    var sc=r.genel_not||0;
+    restoreResult(name,period,sc,r);
+    if(r.hedef_notlari&&r.hedef_notlari.length){
+      goals.forEach(function(g,i){
+        var gn=r.hedef_notlari[i];if(!gn)return;
+        var sc2=document.getElementById('gsc-'+g._n);
+        if(sc2){sc2.textContent=gn.not;sc2.style.color=col(gn.not);}
+      });
+    }
+    var records=await tLoad();
+    var goalsSave=goals.map(function(g){return {objective:g.objective,kr:g.kr,done:g.done};});
+    var idx=records.findIndex(function(x){return x.name===name&&x.period===period;});
+    var entry={name:name,period:period,score:sc,date:new Date().toLocaleDateString('tr-TR'),goals:goalsSave,result:r};
+    if(idx>=0) records[idx]=entry; else records.unshift(entry);
+    await tSave(records);
+    await personalSave(name,{goals:goalsSave,period:period,score:sc,result:r});
+    showToast('Değerlendirme kaydedildi ✓');
+    document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
+  } catch(err){
+    document.getElementById('spin').style.display='none';
+    showErr('Hata: '+err.message);
+  }
+  btn.disabled=false;
+}
+
+// ── MANAGER ──
+async function loadTeam() {
+  var records=await tLoad();
+  var statsEl=document.getElementById('stats');
+  var listEl=document.getElementById('team-list');
+  if(!records.length){
+    statsEl.innerHTML='';
+    listEl.innerHTML='<div class="tbl"><div class="empty"><div class="empty-ico">📊</div><div class="empty-title">Henüz değerlendirme yok</div><div class="empty-desc">Ekip üyeleri değerlendirmelerini tamamladığında burada görünecek.</div></div></div>';
+    return;
+  }
+  var avg=Math.round(records.reduce(function(s,r){return s+r.score;},0)/records.length);
+  var ex=records.filter(function(r){return r.score>=85;}).length;
+  var dev=records.filter(function(r){return r.score<55;}).length;
+  statsEl.innerHTML=[
+    {v:records.length,l:'Değerlendirme',c:'var(--text)'},
+    {v:avg,l:'Ekip Ortalaması',c:'var(--text)'},
+    {v:ex,l:'Olağanüstü',c:ex>0?'var(--green)':'var(--text-3)'},
+    {v:dev,l:'Gelişim Gerekli',c:dev>0?'var(--yellow)':'var(--text-3)'},
+  ].map(function(s){return '<div class="stat-card"><div class="stat-val" style="color:'+s.c+'">'+s.v+'</div><div class="stat-lbl">'+s.l+'</div></div>';}).join('');
+  var sorted=records.slice().sort(function(a,b){return b.score-a.score;});
+  listEl.innerHTML='<div class="tbl"><div class="tbl-hdr"><div>Çalışan</div><div>İlerleme</div><div style="text-align:right">Skor</div><div></div></div>'+
+    sorted.map(function(rec,i){
+      var oi=records.indexOf(rec);
+      var c=col(rec.score);
+      var av=avStyle(i);
+      var bdTxt=bi(rec.score)[0],bdCls=bi(rec.score)[1];
+      return '<div class="tbl-row" onclick="openDetail('+oi+')">'+
+        '<div class="t-person"><div class="avatar" style="background:'+av.bg+';color:'+av.tc+'">'+ini(rec.name)+'</div>'+
+        '<div><div class="t-name">'+rec.name+'</div><div class="t-role"><span class="badge '+bdCls+'">'+bdTxt+'</span> · '+rec.date+'</div></div></div>'+
+        '<div style="padding-right:8px"><div class="pbar" style="width:100%"><div class="pfill" style="width:'+rec.score+'%;background:'+c+'"></div></div></div>'+
+        '<div class="t-score" style="color:'+c+'">'+rec.score+'</div>'+
+        '<div class="t-arr">›</div></div>';
+    }).join('')+'</div>';
+}
+
+var _cache=[];
+async function openDetail(idx){
+  _cache=await tLoad();
+  var rec=_cache[idx];if(!rec)return;
+  var r=rec.result,sc=rec.score;
+  var bdTxt=bi(sc)[0],bdCls=bi(sc)[1];
+  document.getElementById('m-title').textContent=rec.name;
+  document.getElementById('m-meta').innerHTML=rec.period+' · '+rec.date+'&ensp;<span class="badge '+bdCls+'">'+bdTxt+'</span>&ensp;<span class="mono" style="font-weight:700;color:'+col(sc)+'">'+sc+'/100</span>';
+  var goalsHtml=(rec.goals||[]).map(function(g,i){
+    var gn=r.hedef_notlari&&r.hedef_notlari[i]?r.hedef_notlari[i]:null;
+    var gc=gn?col(gn.not):'var(--text-3)';
+    var krHtml=(g.kr||[]).map(function(k,j){return '<div class="gdc-row"><div class="gdc-lbl">KR'+(j+1)+'</div><div class="gdc-val">'+k+'</div></div>';}).join('');
+    return '<div class="gdc"><div class="gdc-top"><div class="gdc-title">'+g.objective+'</div>'+(gn?'<div class="mono" style="font-size:13px;font-weight:700;color:'+gc+'">'+gn.not+'/100</div>':'')+'</div>'+
+      '<div class="gdc-body">'+krHtml+'<div class="gdc-row"><div class="gdc-lbl">Yapılan</div><div class="gdc-val">'+g.done+'</div></div>'+(gn?'<div class="gdc-row"><div class="gdc-lbl">Yorum</div><div class="gdc-val" style="color:var(--text-3)">'+gn.yorum+'</div></div>':'')+'</div></div>';
+  }).join('');
+  document.getElementById('m-body').innerHTML=
+    '<div class="res-sec"><div class="res-lbl">Genel Değerlendirme</div><div class="res-text">'+r.ozet+'</div></div>'+
+    '<div class="res-grid"><div class="res-sec"><div class="res-lbl">Güçlü Yönler</div><div class="res-text">'+r.guclu_yonler+'</div></div>'+
+    '<div class="res-sec"><div class="res-lbl">Gelişim Alanları</div><div class="res-text">'+r.gelisim_alanlari+'</div></div></div>'+
+    '<div class="sep"></div><div class="res-lbl" style="margin-bottom:10px">Hedef Detayları</div>'+goalsHtml+
+    '<div class="sep"></div><div class="res-sec"><div class="res-lbl">Sonraki Dönem Önerileri</div><div class="res-text">'+r.sonraki_donem_onerileri+'</div></div>';
+  document.getElementById('overlay').classList.add('open');
+}
+function overlayClick(e){if(e.target===document.getElementById('overlay'))closeModal();}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+
+// ── INIT ──
+addGoal();
+
+
+function toggleProfile(e) {
+  e.stopPropagation();
+  document.getElementById('profile-dropdown').classList.toggle('open');
+}
+document.addEventListener('click', function() {
+  var dd = document.getElementById('profile-dropdown');
+  if (dd) dd.classList.remove('open');
+});
+function setProfileName(first, last) {
+  var name = (first + ' ' + last).trim();
+  document.getElementById('profile-name').textContent = name || 'Profil';
+  document.getElementById('profile-avatar').textContent = ((first[0]||'') + (last[0]||'')).toUpperCase() || '?';
+}
+function doLogout() {
+  sessionStorage.removeItem('lu');
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('profile-dropdown').classList.remove('open');
+  // Reset form
+  document.getElementById('e-first').value = '';
+  document.getElementById('e-last').value = '';
+  document.getElementById('goals-wrap').innerHTML = '';
+  gcnt = 0;
+  addGoal();
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('hedef-card').style.display = 'none';
+}
+
+// Session check
+(function(){
+  try{var s=sessionStorage.getItem('lu');if(s){var d=JSON.parse(s);lDone(d.f,d.l);}}catch(e){}
+})();
+
+// Seed demo user in localStorage if not exists
+(async function(){
+  try {
+    var demoKey = makeKey('test@test.com');
+    var existing = await storageLoad('auth-' + demoKey);
+    if (!existing) {
+      await storageSave('auth-' + demoKey, JSON.stringify({first:'Test', last:'Kullanici', password:'test123'}));
+    }
+  } catch(e) {}
+})();
+
+</script>
+
+
+<div id="login-overlay">
+  <div id="login-box">
+    <div id="login-head">
+      <svg width="172" height="52" viewBox="0 0 172 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 51.7058V41.0471H4.03183C4.8578 41.0471 5.55077 41.1998 6.11075 41.5051C6.67423 41.8104 7.09946 42.2303 7.38645 42.7646C7.67694 43.2954 7.82218 43.8992 7.82218 44.5757C7.82218 45.2593 7.67694 45.8664 7.38645 46.3973C7.09596 46.9282 6.66723 47.3462 6.10025 47.6516C5.53327 47.9534 4.83505 48.1044 4.00559 48.1044H1.33345V46.517H3.7431C4.22608 46.517 4.62156 46.4337 4.92955 46.2672C5.23754 46.1006 5.46503 45.8716 5.61202 45.5802C5.76251 45.2887 5.83776 44.9539 5.83776 44.5757C5.83776 44.1975 5.76251 43.8645 5.61202 43.5765C5.46503 43.2885 5.23579 43.0647 4.9243 42.9051C4.61631 42.742 4.21908 42.6605 3.7326 42.6605H1.94767V51.7058H0Z" fill="black"/>
+<path d="M9.51392 51.7058V41.0471H16.5066V42.6657H11.4616V45.5594H16.1444V47.178H11.4616V50.0873H16.5486V51.7058H9.51392Z" fill="black"/>
+<path d="M18.4937 51.7058V41.0471H22.5255C23.3515 41.0471 24.0445 41.1894 24.6044 41.4739C25.1679 41.7584 25.5931 42.1574 25.8801 42.6709C26.1706 43.1809 26.3159 43.776 26.3159 44.456C26.3159 45.1396 26.1689 45.7329 25.8749 46.236C25.5844 46.7356 25.1557 47.1225 24.5887 47.3966C24.0217 47.6672 23.3252 47.8025 22.4993 47.8025H19.6276V46.1995H22.2368C22.7198 46.1995 23.1152 46.1336 23.4232 46.0018C23.7312 45.8664 23.9587 45.6704 24.1057 45.4137C24.2562 45.1534 24.3314 44.8342 24.3314 44.456C24.3314 44.0778 24.2562 43.7552 24.1057 43.488C23.9552 43.2174 23.726 43.0127 23.418 42.8739C23.11 42.7316 22.7128 42.6605 22.2263 42.6605H20.4413V51.7058H18.4937ZM24.0479 46.8761L26.7096 51.7058H24.5362L21.9218 46.8761H24.0479Z" fill="black"/>
+<path d="M28.1087 51.7058V41.0471H34.9964V42.6657H30.0563V45.5594H34.5239V47.178H30.0563V51.7058H28.1087Z" fill="black"/>
+<path d="M46.3779 46.3765C46.3779 47.5249 46.1609 48.5086 45.7269 49.3274C45.2965 50.1428 44.7085 50.7673 43.963 51.201C43.221 51.6347 42.3793 51.8516 41.4379 51.8516C40.4964 51.8516 39.6529 51.6347 38.9075 51.201C38.1655 50.7638 37.5775 50.1376 37.1435 49.3222C36.7131 48.5034 36.4978 47.5215 36.4978 46.3765C36.4978 45.228 36.7131 44.2461 37.1435 43.4308C37.5775 42.6119 38.1655 41.9857 38.9075 41.5519C39.6529 41.1182 40.4964 40.9014 41.4379 40.9014C42.3793 40.9014 43.221 41.1182 43.963 41.5519C44.7085 41.9857 45.2965 42.6119 45.7269 43.4308C46.1609 44.2461 46.3779 45.228 46.3779 46.3765ZM44.4197 46.3765C44.4197 45.5681 44.292 44.8863 44.0365 44.3311C43.7845 43.7725 43.4345 43.351 42.9866 43.0664C42.5386 42.7785 42.0223 42.6345 41.4379 42.6345C40.8534 42.6345 40.3372 42.7785 39.8892 43.0664C39.4412 43.351 39.0895 43.7725 38.834 44.3311C38.582 44.8863 38.456 45.5681 38.456 46.3765C38.456 47.1849 38.582 47.8684 38.834 48.427C39.0895 48.9822 39.4412 49.4037 39.8892 49.6917C40.3372 49.9762 40.8534 50.1185 41.4379 50.1185C42.0223 50.1185 42.5386 49.9762 42.9866 49.6917C43.4345 49.4037 43.7845 48.9822 44.0365 48.427C44.292 47.8684 44.4197 47.1849 44.4197 46.3765Z" fill="black"/>
+<path d="M48.2193 51.7058V41.0471H52.2511C53.0771 41.0471 53.77 41.1894 54.33 41.4739C54.8935 41.7584 55.3187 42.1574 55.6057 42.6709C55.8962 43.1809 56.0415 43.776 56.0415 44.456C56.0415 45.1396 55.8945 45.7329 55.6005 46.236C55.31 46.7356 54.8813 47.1225 54.3143 47.3966C53.7473 47.6672 53.0508 47.8025 52.2249 47.8025H49.3532V46.1995H51.9624C52.4453 46.1995 52.8408 46.1336 53.1488 46.0018C53.4568 45.8664 53.6843 45.6704 53.8313 45.4137C53.9818 45.1534 54.057 44.8342 54.057 44.456C54.057 44.0778 53.9818 43.7552 53.8313 43.488C53.6808 43.2174 53.4516 43.0127 53.1436 42.8739C52.8356 42.7316 52.4384 42.6605 51.9519 42.6605H50.1669V51.7058H48.2193ZM53.7735 46.8761L56.4352 51.7058H54.2618L51.6474 46.8761H53.7735Z" fill="black"/>
+<path d="M57.8343 41.0471H60.2177L63.4095 48.7705H63.5355L66.7274 41.0471H69.1108V51.7058H67.2419V44.3832H67.1421L64.1707 51.6746H62.7743L59.8029 44.3676H59.7032V51.7058H57.8343V41.0471Z" fill="black"/>
+<path d="M72.6124 51.7058H70.5335L74.3186 41.0471H76.723L80.5133 51.7058H78.4344L75.5628 43.233H75.4788L72.6124 51.7058ZM72.6806 47.5267H78.3504V49.0776H72.6806V47.5267Z" fill="black"/>
+<path d="M90.7648 41.0471V51.7058H89.0324L83.9664 44.4456H83.8771V51.7058H81.9295V41.0471H83.6724L88.7332 48.3125H88.8277V41.0471H90.7648Z" fill="black"/>
+<path d="M98.7301 43.9772C98.6811 43.5227 98.4746 43.1688 98.1106 42.9155C97.7501 42.6622 97.2811 42.5356 96.7037 42.5356C96.2977 42.5356 95.9494 42.5963 95.6589 42.7177C95.3685 42.8392 95.1462 43.004 94.9922 43.2122C94.8382 43.4203 94.7595 43.658 94.756 43.9252C94.756 44.1472 94.8067 44.3398 94.9082 44.5029C95.0132 44.6659 95.155 44.8047 95.3335 44.9192C95.512 45.0303 95.7097 45.1239 95.9267 45.2003C96.1437 45.2766 96.3624 45.3408 96.5829 45.3928L97.5909 45.6427C97.9969 45.7363 98.3871 45.863 98.7616 46.0226C99.1396 46.1822 99.4773 46.3834 99.7748 46.6263C100.076 46.8692 100.314 47.1624 100.489 47.5058C100.664 47.8493 100.751 48.2518 100.751 48.7133C100.751 49.3378 100.59 49.8878 100.268 50.3631C99.9463 50.835 99.4808 51.2045 98.8718 51.4716C98.2663 51.7353 97.5331 51.8672 96.6722 51.8672C95.8357 51.8672 95.1095 51.7388 94.4935 51.4821C93.881 51.2253 93.4015 50.8506 93.0551 50.3579C92.7121 49.8652 92.5266 49.265 92.4986 48.5572H94.4148C94.4428 48.9284 94.5582 49.2372 94.7612 49.4835C94.9642 49.7299 95.2285 49.9138 95.554 50.0352C95.8829 50.1567 96.2504 50.2174 96.6564 50.2174C97.0799 50.2174 97.4509 50.1549 97.7694 50.03C98.0913 49.9016 98.3433 49.7247 98.5253 49.4992C98.7073 49.2702 98.8001 49.003 98.8036 48.6977C98.8001 48.4201 98.7178 48.1911 98.5568 48.0107C98.3958 47.8268 98.1701 47.6741 97.8796 47.5527C97.5926 47.4278 97.2566 47.3168 96.8717 47.2196L95.6485 46.9073C94.763 46.6818 94.063 46.3401 93.5485 45.8821C93.0376 45.4206 92.7821 44.8082 92.7821 44.0449C92.7821 43.4169 92.9536 42.8669 93.2966 42.3951C93.643 41.9232 94.1138 41.5572 94.7087 41.2969C95.3037 41.0332 95.9774 40.9014 96.7299 40.9014C97.4929 40.9014 98.1614 41.0332 98.7353 41.2969C99.3128 41.5572 99.766 41.9197 100.095 42.3847C100.424 42.8461 100.594 43.377 100.604 43.9772H98.7301Z" fill="black"/>
+<path d="M107.535 51.7058H105.456L109.241 41.0471H111.646L115.436 51.7058H113.357L110.486 43.233H110.402L107.535 51.7058ZM107.604 47.5267H113.273V49.0776H107.604V47.5267Z" fill="black"/>
+<path d="M122.522 43.9772C122.473 43.5227 122.267 43.1688 121.903 42.9155C121.542 42.6622 121.073 42.5356 120.496 42.5356C120.09 42.5356 119.741 42.5963 119.451 42.7177C119.16 42.8392 118.938 43.004 118.784 43.2122C118.63 43.4203 118.552 43.658 118.548 43.9252C118.548 44.1472 118.599 44.3398 118.7 44.5029C118.805 44.6659 118.947 44.8047 119.125 44.9192C119.304 45.0303 119.502 45.1239 119.719 45.2003C119.936 45.2766 120.154 45.3408 120.375 45.3928L121.383 45.6427C121.789 45.7363 122.179 45.863 122.554 46.0226C122.932 46.1822 123.269 46.3834 123.567 46.6263C123.868 46.8692 124.106 47.1624 124.281 47.5058C124.456 47.8493 124.543 48.2518 124.543 48.7133C124.543 49.3378 124.382 49.8878 124.06 50.3631C123.738 50.835 123.273 51.2045 122.664 51.4716C122.058 51.7353 121.325 51.8672 120.464 51.8672C119.628 51.8672 118.901 51.7388 118.286 51.4821C117.673 51.2253 117.194 50.8506 116.847 50.3579C116.504 49.8652 116.319 49.265 116.291 48.5572H118.207C118.235 48.9284 118.35 49.2372 118.553 49.4835C118.756 49.7299 119.02 49.9138 119.346 50.0352C119.675 50.1567 120.042 50.2174 120.448 50.2174C120.872 50.2174 121.243 50.1549 121.561 50.03C121.883 49.9016 122.135 49.7247 122.317 49.4992C122.499 49.2702 122.592 49.003 122.596 48.6977C122.592 48.4201 122.51 48.1911 122.349 48.0107C122.188 47.8268 121.962 47.6741 121.672 47.5527C121.385 47.4278 121.049 47.3168 120.664 47.2196L119.44 46.9073C118.555 46.6818 117.855 46.3401 117.341 45.8821C116.83 45.4206 116.574 44.8082 116.574 44.0449C116.574 43.4169 116.746 42.8669 117.089 42.3951C117.435 41.9232 117.906 41.5572 118.501 41.2969C119.096 41.0332 119.769 40.9014 120.522 40.9014C121.285 40.9014 121.953 41.0332 122.527 41.2969C123.105 41.5572 123.558 41.9197 123.887 42.3847C124.216 42.8461 124.386 43.377 124.396 43.9772H122.522Z" fill="black"/>
+<path d="M128.227 41.0471V51.7058H126.28V41.0471H128.227ZM127.256 39.9125C126.952 39.9125 126.691 39.8137 126.474 39.6159C126.26 39.4146 126.154 39.1735 126.154 38.8925C126.154 38.608 126.262 38.3668 126.479 38.169C126.696 37.9678 126.955 37.8672 127.256 37.8672C127.557 37.8672 127.814 37.9678 128.028 38.169C128.245 38.3668 128.353 38.608 128.353 38.8925C128.353 39.1735 128.245 39.4146 128.028 39.6159C127.814 39.8137 127.557 39.9125 127.256 39.9125Z" fill="black"/>
+<path d="M136.179 43.9772C136.13 43.5227 135.924 43.1688 135.56 42.9155C135.199 42.6622 134.73 42.5356 134.153 42.5356C133.747 42.5356 133.399 42.5963 133.108 42.7177C132.818 42.8392 132.596 43.004 132.442 43.2122C132.288 43.4203 132.209 43.658 132.205 43.9252C132.205 44.1472 132.256 44.3398 132.358 44.5029C132.463 44.6659 132.604 44.8047 132.783 44.9192C132.961 45.0303 133.159 45.1239 133.376 45.2003C133.593 45.2766 133.812 45.3408 134.032 45.3928L135.04 45.6427C135.446 45.7363 135.836 45.863 136.211 46.0226C136.589 46.1822 136.927 46.3834 137.224 46.6263C137.525 46.8692 137.763 47.1624 137.938 47.5058C138.113 47.8493 138.201 48.2518 138.201 48.7133C138.201 49.3378 138.04 49.8878 137.718 50.3631C137.396 50.835 136.93 51.2045 136.321 51.4716C135.716 51.7353 134.982 51.8672 134.121 51.8672C133.285 51.8672 132.559 51.7388 131.943 51.4821C131.33 51.2253 130.851 50.8506 130.504 50.3579C130.161 49.8652 129.976 49.265 129.948 48.5572H131.864C131.892 48.9284 132.008 49.2372 132.211 49.4835C132.414 49.7299 132.678 49.9138 133.003 50.0352C133.332 50.1567 133.7 50.2174 134.106 50.2174C134.529 50.2174 134.9 50.1549 135.219 50.03C135.541 49.9016 135.793 49.7247 135.975 49.4992C136.157 49.2702 136.249 49.003 136.253 48.6977C136.249 48.4201 136.167 48.1911 136.006 48.0107C135.845 47.8268 135.619 47.6741 135.329 47.5527C135.042 47.4278 134.706 47.3168 134.321 47.2196L133.098 46.9073C132.212 46.6818 131.512 46.3401 130.998 45.8821C130.487 45.4206 130.231 44.8082 130.231 44.0449C130.231 43.4169 130.403 42.8669 130.746 42.3951C131.092 41.9232 131.563 41.5572 132.158 41.2969C132.753 41.0332 133.427 40.9014 134.179 40.9014C134.942 40.9014 135.611 41.0332 136.185 41.2969C136.762 41.5572 137.215 41.9197 137.544 42.3847C137.873 42.8461 138.043 43.377 138.054 43.9772H136.179Z" fill="black"/>
+<path d="M139.464 42.6657V41.0471H148.043V42.6657H144.719V51.7058H142.788V42.6657H139.464Z" fill="black"/>
+<path d="M149.778 51.7058H147.699L151.484 41.0471H153.888L157.679 51.7058H155.6L152.728 43.233H152.644L149.778 51.7058ZM149.846 47.5267H155.516V49.0776H149.846V47.5267Z" fill="black"/>
+<path d="M167.93 41.0471V51.7058H166.198L161.132 44.4456H161.042V51.7058H159.095V41.0471H160.838L165.898 48.3125H165.993V41.0471H167.93Z" fill="black"/>
+<path d="M172 41.0471V51.7058H170.052V41.0471H172Z" fill="black"/>
+<path d="M105.906 30.601L100.686 25.2008H77.105C71.1402 25.2008 66.3047 20.3653 66.3047 14.4005V10.8003C66.3047 4.83548 71.1402 1.73956e-07 77.105 0H95.1056C101.07 0 105.906 4.83548 105.906 10.8003V30.601Z" fill="url(#paint0_linear_2509_5165)"/>
+<path d="M73.6875 19.5996L78.1431 7.3505C78.3645 6.75971 78.7098 6.3199 79.1788 6.03107C79.6608 5.72911 80.2015 5.57812 80.8008 5.57812C81.4 5.57812 81.9407 5.72254 82.4227 6.01137C82.9048 6.28708 83.25 6.72689 83.4585 7.33081L87.9336 19.5996H84.8655L83.947 16.8229H77.5763L76.6188 19.5996H73.6875ZM78.4166 14.3415H83.1262L81.1525 8.29577C81.1265 8.20387 81.0809 8.13822 81.0157 8.09884C80.9636 8.05945 80.8985 8.03976 80.8203 8.03976C80.7421 8.03976 80.677 8.06602 80.6249 8.11853C80.5728 8.15792 80.5337 8.217 80.5076 8.29577L78.4166 14.3415Z" fill="white"/>
+<path d="M89.4766 19.5996V17.0757H92.0419V8.10199H89.4766V5.57812H97.5187V8.10199H94.9534V17.0757H97.5187V19.5996H89.4766Z" fill="white"/>
+<defs>
+<linearGradient id="paint0_linear_2509_5165" x1="74.3173" y1="-11.4115" x2="98.8635" y2="20.7626" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F9277E"/>
+<stop offset="0.245192" stop-color="#C347F5"/>
+<stop offset="0.639423" stop-color="#F32F19"/>
+<stop offset="1" stop-color="#FFAE43"/>
+</linearGradient>
+</defs>
+</svg>
+    </div>
+
+    <div id="login-body">
+      <div id="login-lerr"></div>
+      <div id="lf-l">
+        <div class="lfield">
+          <label>Kullanıcı Adı</label>
+          <input type="text" id="l-user" placeholder="Örn: cenk.yilmaz@trendyol.com" onkeydown="if(event.key==='Enter')lLogin()">
+        </div>
+        <div class="lfield">
+          <label>Şifre</label>
+          <input type="password" id="l-pass" placeholder="••••••••••" onkeydown="if(event.key==='Enter')lLogin()">
+        </div>
+        <button class="login-btn-style" onclick="lLogin()">Giriş Yap &nbsp;→</button>
+        <div id="login-foot">Hesabın yok mu? <a onclick="lSwitchTab('r')">Kayıt Ol</a></div>
+      </div>
+      <div id="lf-r" style="display:none">
+        <div class="lfield">
+          <label>İsim</label>
+          <input type="text" id="r-first" placeholder="Örn: Cenk">
+        </div>
+        <div class="lfield">
+          <label>Soyisim</label>
+          <input type="text" id="r-last" placeholder="Örn: Yılmaz">
+        </div>
+        <div class="lfield">
+          <label>Kullanıcı Adı</label>
+          <input type="text" id="r-user" placeholder="Örn: cenk.yilmaz@trendyol.com">
+        </div>
+        <div class="lfield">
+          <label>Şifre</label>
+          <input type="password" id="r-pass" placeholder="••••••••••">
+        </div>
+        <button class="login-btn-style" onclick="lRegister()">Kayıt Ol &nbsp;→</button>
+        <div id="login-foot">Hesabın var mı? <a onclick="lSwitchTab('l')">Giriş Yap</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
