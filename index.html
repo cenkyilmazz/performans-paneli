@@ -23,7 +23,7 @@
   --yellow: #d97706;
   --radius: 8px;
   --shadow: 0 1px 2px rgba(0,0,0,.08);
-  --max: 800px;
+  --max: 1000px;
 }
 
 body {
@@ -472,7 +472,7 @@ select {
   background: var(--white); border-top: 1px solid var(--border);
 }
 .sticky-bar-inner {
-  max-width: 800px; margin: 0 auto;
+  max-width: 1000px; margin: 0 auto;
   padding: 0 24px; height: 100%;
   display: flex; align-items: center; justify-content: flex-end; gap: 12px;
 }
@@ -556,7 +556,7 @@ select {
   <div class="hero">
     <div class="hero-inner">
       <h1 id="hero-greeting" style="font-size:24px;font-weight:600;letter-spacing:-0.4px;margin-bottom:4px">Merhaba!</h1>
-      <p>Hedeflerini ve neler yaptığını gir; AI mevcut performansını değerlendirerek önerilerde bulunsun.</p>
+      <p>Ben senin AI destekli performans asistanınım. Hedef süreçlerini analiz eder, sana özel öneriler sunarım.</p>
 
       <!-- Hidden data for name (filled by login) -->
       <input type="hidden" id="e-first" value="">
@@ -592,7 +592,7 @@ select {
     <div class="sec-row" style="margin-top:-2px">
       <div>
         <h2>Hedefler</h2>
-        <p>Her hedef için ne planladığını ve ne yaptığını açıkla.</p>
+        <p>Hadi hedeflerini ve ilerlemeni gir. Performansını hızlıca analiz edeceğim.</p>
       </div>
       <button class="btn btn-add" onclick="addGoal()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -607,14 +607,14 @@ select {
 <path d="M10.3603 10.31C7.25865 13.3971 5.51036 17.5899 5.50005 21.966C5.48973 26.3421 7.21824 30.543 10.3053 33.6447C13.3924 36.7464 17.5852 38.4947 21.9613 38.505C26.3374 38.5153 30.5383 36.7868 33.64 33.6997M36.7255 29.4592C38.2985 26.3596 38.8525 22.8424 38.3083 19.4093C37.7642 15.9762 36.1498 12.8027 33.6954 10.3414C31.241 7.88005 28.072 6.25673 24.6405 5.70295C21.209 5.14918 17.6902 5.69324 14.5861 7.25754" stroke="#CECECE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M5.5 5.5L38.5 38.5" stroke="#CECECE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
-      <p>Hedefiniz bulunmamaktadır. Lütfen hedef <span onclick="addGoal()" style="color:#111;text-decoration:underline;cursor:pointer;font-weight:500">ekleyin</span>.</p>
+      <p>Hedefin bulunmamaktadır. Hadi hedef <span onclick="addGoal()" style="color:#111;text-decoration:underline;cursor:pointer;font-weight:500">ekle</span>.</p>
     </div>
 
-    <div class="err" id="e-err"></div>
+    <div class="err" id="e-err" style="display:none"></div>
 
     <div class="sticky-bar">
       <div class="sticky-bar-inner">
-        <button class="btn btn-add" id="save-btn" onclick="saveGoals()" style="width:180px;height:36px;padding:0;font-size:14px;border-radius:8px">Hedeflerimi Kaydet</button>
+        <button class="btn btn-add" id="save-btn" onclick="saveGoals()" style="width:180px;height:36px;padding:0;font-size:14px;border-radius:8px">Hedefleri Kaydet</button>
         <button class="btn btn-primary" id="eval-btn" onclick="doEval()" style="width:180px;height:36px;padding:0;font-size:14px">
           AI ile Değerlendir &nbsp;→
         </button>
@@ -731,6 +731,76 @@ select {
 
 
 <script>
+// ── SUPABASE CONFIG ──
+const SUPA_URL = 'https://knrgndjwqnedypfjwwwy.supabase.co';
+const SUPA_KEY = 'sb_publishable_05mAoYUtD1uuvQbYXoQq2Q_rPrjptgs';
+
+async function sbFetch(path, method, body) {
+  var res = await fetch(SUPA_URL + '/rest/v1/' + path, {
+    method: method || 'GET',
+    headers: {
+      'apikey': SUPA_KEY,
+      'Authorization': 'Bearer ' + SUPA_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  if (!res.ok) {
+    var err = await res.text();
+    throw new Error(err);
+  }
+  var text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// ── SUPABASE AUTH ──
+async function sbRegister(first, last, username, password) {
+  // Check if exists
+  var existing = await sbFetch('users?username=eq.' + encodeURIComponent(username) + '&select=username');
+  if (existing && existing.length > 0) throw new Error('Bu kullanıcı adı zaten kayıtlı.');
+  await sbFetch('users', 'POST', {
+    username: username,
+    password: password,
+    first_name: first,
+    last_name: last
+  });
+}
+
+async function sbLogin(username, password) {
+  var rows = await sbFetch('users?username=eq.' + encodeURIComponent(username) + '&select=*');
+  if (!rows || rows.length === 0) throw new Error('Kullanıcı bulunamadı. Önce kayıt olun.');
+  var user = rows[0];
+  if (user.password !== password) throw new Error('Şifre hatalı.');
+  return user;
+}
+
+async function sbSaveGoals(username, period, goals, result, score) {
+  // Upsert goals
+  var existing = await sbFetch('goals?username=eq.' + encodeURIComponent(username) + '&period=eq.' + period + '&select=id');
+  if (existing && existing.length > 0) {
+    await sbFetch('goals?username=eq.' + encodeURIComponent(username) + '&period=eq.' + period, 'PATCH', {
+      goals: goals,
+      result: result || null,
+      score: score || null,
+      updated_at: new Date().toISOString()
+    });
+  } else {
+    await sbFetch('goals', 'POST', {
+      username: username,
+      period: period,
+      goals: goals,
+      result: result || null,
+      score: score || null
+    });
+  }
+}
+
+async function sbLoadGoals(username, period) {
+  var rows = await sbFetch('goals?username=eq.' + encodeURIComponent(username) + '&period=eq.' + period + '&select=*');
+  return (rows && rows.length > 0) ? rows[0] : null;
+}
+
 // ── STORAGE ──
 function makeKey(name) {
   return 'user-' + name
@@ -758,6 +828,19 @@ async function personalLoad(name) {
 }
 
 // ── LOGIN ──
+function togglePwd(inputId, iconId) {
+  var inp  = document.getElementById(inputId);
+  var icon = document.getElementById(iconId);
+  if (!inp) return;
+  var isHidden = inp.type === 'password';
+  inp.type = isHidden ? 'text' : 'password';
+  if (icon) {
+    icon.innerHTML = isHidden
+      ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+      : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
 function lSwitchTab(t) {
   document.getElementById('lf-l').style.display = t==='l' ? 'block' : 'none';
   document.getElementById('lf-r').style.display = t==='r' ? 'block' : 'none';
@@ -768,12 +851,12 @@ async function lLogin() {
   var u = document.getElementById('l-user').value.trim();
   var p = document.getElementById('l-pass').value;
   if (!u||!p) return lErr('Kullanıcı adı ve şifre gerekli.');
-  var stored = null;
-  try { var r = await storageLoad('auth-'+makeKey(u)); stored = r ? JSON.parse(r) : null; } catch(e){}
-  if (!stored) return lErr('Kullanıcı bulunamadı. Önce kayıt olun.');
-  if (stored.password !== p) return lErr('Şifre hatalı.');
-  sessionStorage.setItem('lu', JSON.stringify({u:u, f:stored.first, l:stored.last}));
-  lDone(stored.first, stored.last);
+  try {
+    var user = await sbLogin(u, p);
+    sessionStorage.setItem('lu', JSON.stringify({u:u, f:user.first_name, l:user.last_name}));
+    _pendingUsername = u;
+    lDone(user.first_name, user.last_name);
+  } catch(e) { lErr(e.message); }
 }
 async function lRegister() {
   var f = document.getElementById('r-first').value.trim();
@@ -783,22 +866,37 @@ async function lRegister() {
   if (!f||!l) return lErr('İsim ve soyisim gerekli.');
   if (!u) return lErr('Kullanıcı adı gerekli.');
   if (!p||p.length<4) return lErr('Şifre en az 4 karakter olmalı.');
-  var existing = null;
-  try { var r = await storageLoad('auth-'+makeKey(u)); existing = r ? JSON.parse(r) : null; } catch(e){}
-  if (existing) return lErr('Bu kullanıcı adı zaten kayıtlı.');
-  await storageSave('auth-'+makeKey(u), JSON.stringify({first:f, last:l, password:p}));
-  sessionStorage.setItem('lu', JSON.stringify({u:u, f:f, l:l}));
-  lDone(f, l);
+  try {
+    await sbRegister(f, l, u, p);
+    sessionStorage.setItem('lu', JSON.stringify({u:u, f:f, l:l}));
+    _pendingUsername = u;
+    lDone(f, l);
+  } catch(e) { lErr(e.message); }
 }
-var _currentUser = {first:'', last:''};
-function lDone(first, last) {
-  _currentUser = {first: first, last: last};
+var _currentUser = {first:'', last:'', username:''};
+var _pendingUsername = '';
+async function lDone(first, last) {
+  _currentUser = {first: first, last: last, username: _pendingUsername || ''};
   document.getElementById('login-overlay').style.display = 'none';
   document.getElementById('e-first').value = first;
   document.getElementById('e-last').value  = last;
   setProfileName(first, last);
   var greeting = document.getElementById('hero-greeting');
   if (greeting) greeting.textContent = 'Merhaba, ' + first + ' ' + last + '!';
+
+  // Clear and load from Supabase
+  document.getElementById('goals-wrap').innerHTML = '';
+  gcnt = 0;
+  try {
+    var period = document.getElementById('e-period').value;
+    var data = _currentUser.username ? await sbLoadGoals(_currentUser.username, period) : null;
+    if (data && data.goals && data.goals.length) {
+      data.goals.forEach(function(g) { addGoal(g); });
+      if (data.result) restoreResult((first+' '+last).trim(), data.period, data.score, data.result);
+    }
+  } catch(e) { console.warn('Goal load error:', e); }
+  checkEmpty();
+  updateSummary();
 }
 
 // ── AUTO-LOAD ──
@@ -822,14 +920,19 @@ function showToast(msg, type) {
   if (!t) {
     t = document.createElement('div');
     t.id = 'toast';
-    t.style.cssText = 'position:fixed;top:24px;right:24px;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .3s;box-shadow:0 4px 12px rgba(0,0,0,.12)';
+    t.style.cssText = 'position:fixed;top:24px;right:24px;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:opacity .3s;box-shadow:0 4px 12px rgba(0,0,0,.12)';
     document.body.appendChild(t);
   }
-  t.style.background = (!type||type==='success') ? 'var(--green)' : 'var(--text)';
+  if (type === 'error') {
+    t.style.background = '#F51D1D';
+  } else {
+    t.style.background = 'var(--green)';
+  }
   t.style.color = 'white';
   t.textContent = msg;
   t.style.opacity = '1';
-  setTimeout(function() { t.style.opacity='0'; }, 2500);
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function() { t.style.opacity='0'; }, 3000);
 }
 
 // ── RESTORE RESULT ──
@@ -948,10 +1051,17 @@ function checkEmpty() {
   if (saveBtn) saveBtn.disabled = isEmpty;
 }
 
-function removeGoal(n) {
+async function removeGoal(n) {
   var e = document.getElementById('gc-'+n); if(e) e.remove();
   updateSummary();
   checkEmpty();
+  if (!_currentUser.username) return;
+  try {
+    var period = document.getElementById('e-period').value;
+    var goals = getGoals();
+    var goalsSave = goals.map(function(g){ return {objective:g.objective, kr:g.kr, done:g.done}; });
+    await sbSaveGoals(_currentUser.username, period, goalsSave, null, null);
+  } catch(e) { console.warn('Auto-save error:', e); }
 }
 
 function toggleGoal(n) {
@@ -991,25 +1101,21 @@ function avStyle(i) {
 }
 function ini(n) { var p=n.trim().split(' '); return (p[0][0]+(p[1]?p[1][0]:'')).toUpperCase(); }
 function showErr(m) {
-  var b=document.getElementById('e-err'); b.textContent=m; b.style.display='block';
-  setTimeout(function(){b.style.display='none';},5000);
+  showToast(m, 'error');
 }
 
 // ── SAVE GOALS ──
 async function saveGoals() {
-  var first = _currentUser.first || document.getElementById('e-first').value.trim();
-  var last  = _currentUser.last  || document.getElementById('e-last').value.trim();
+  if (!_currentUser.username) return showErr('Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.');
   var goals = getGoals();
-  var name  = (first + ' ' + last).trim();
-  if (!name) return showErr('Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.');
   if (!goals.length) return showErr('En az bir hedef ekleyin.');
+  var period = document.getElementById('e-period').value;
   var goalsSave = goals.map(function(g){ return {objective:g.objective, kr:g.kr, done:g.done}; });
-  var existing = await personalLoad(name) || {};
-  existing.goals = goalsSave;
-  existing.period = document.getElementById('e-period').value;
-  await personalSave(name, existing);
-  updateSummary();
-  showToast('Hedefler kaydedildi ✓');
+  try {
+    await sbSaveGoals(_currentUser.username, period, goalsSave, null, null);
+    updateSummary();
+    showToast('Hedefler kaydedildi ✓');
+  } catch(e) { showErr('Kayıt hatası: ' + e.message); }
 }
 
 // ── EVALUATE ──
@@ -1058,13 +1164,16 @@ async function doEval() {
         if(sc2){sc2.textContent=gn.not;sc2.style.color=col(gn.not);}
       });
     }
-    var records=await tLoad();
     var goalsSave=goals.map(function(g){return {objective:g.objective,kr:g.kr,done:g.done};});
-    var idx=records.findIndex(function(x){return x.name===name&&x.period===period;});
-    var entry={name:name,period:period,score:sc,date:new Date().toLocaleDateString('tr-TR'),goals:goalsSave,result:r};
-    if(idx>=0) records[idx]=entry; else records.unshift(entry);
-    await tSave(records);
-    await personalSave(name,{goals:goalsSave,period:period,score:sc,result:r});
+    try {
+      await sbSaveGoals(_currentUser.username, period, goalsSave, r, sc);
+      // Also save to shared team storage
+      var records=await tLoad();
+      var idx=records.findIndex(function(x){return x.name===name&&x.period===period;});
+      var entry={name:name,period:period,score:sc,date:new Date().toLocaleDateString('tr-TR'),goals:goalsSave,result:r};
+      if(idx>=0) records[idx]=entry; else records.unshift(entry);
+      await tSave(records);
+    } catch(e) { console.warn('Save error:', e); }
     showToast('Değerlendirme kaydedildi ✓');
     document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
   } catch(err){
@@ -1171,16 +1280,7 @@ function doLogout() {
   try{var s=sessionStorage.getItem('lu');if(s){var d=JSON.parse(s);lDone(d.f,d.l);}}catch(e){}
 })();
 
-// Seed demo user in localStorage if not exists
-(async function(){
-  try {
-    var demoKey = makeKey('test@test.com');
-    var existing = await storageLoad('auth-' + demoKey);
-    if (!existing) {
-      await storageSave('auth-' + demoKey, JSON.stringify({first:'Test', last:'Kullanici', password:'test123'}));
-    }
-  } catch(e) {}
-})();
+// Supabase auth active - no local seed needed
 
 </script>
 
@@ -1230,7 +1330,12 @@ function doLogout() {
         </div>
         <div class="lfield">
           <label>Şifre</label>
-          <input type="password" id="l-pass" placeholder="••••••••••" onkeydown="if(event.key==='Enter')lLogin()">
+          <div style="position:relative">
+            <input type="password" id="l-pass" placeholder="••••••••••" onkeydown="if(event.key==='Enter')lLogin()" style="padding-right:38px">
+            <button type="button" onclick="togglePwd('l-pass','l-eye')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#a3a3a3;padding:0;display:flex;align-items:center">
+              <svg id="l-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
         </div>
         <button class="login-btn-style" onclick="lLogin()">Giriş Yap &nbsp;→</button>
         <div id="login-foot">Hesabın yok mu? <a onclick="lSwitchTab('r')">Kayıt Ol</a></div>
@@ -1250,7 +1355,12 @@ function doLogout() {
         </div>
         <div class="lfield">
           <label>Şifre</label>
-          <input type="password" id="r-pass" placeholder="••••••••••">
+          <div style="position:relative">
+            <input type="password" id="r-pass" placeholder="••••••••••" style="padding-right:38px">
+            <button type="button" onclick="togglePwd('r-pass','r-eye')" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#a3a3a3;padding:0;display:flex;align-items:center">
+              <svg id="r-eye" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
         </div>
         <button class="login-btn-style" onclick="lRegister()">Kayıt Ol &nbsp;→</button>
         <div id="login-foot">Hesabın var mı? <a onclick="lSwitchTab('l')">Giriş Yap</a></div>
