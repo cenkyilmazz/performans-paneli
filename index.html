@@ -77,7 +77,7 @@ body {
 .hero p  { font-size: 14px; color: var(--text-3); margin-top: 1px; }
 
 /* ── MAIN CONTENT — white background ── */
-.content { max-width: var(--max); margin: 0 auto; padding: 28px 24px 60px; }
+.content { max-width: var(--max); margin: 0 auto; padding: 28px 24px 80px; }
 
 /* ── CARD ── */
 .card {
@@ -166,7 +166,7 @@ select {
 .okr-field:last-child { border-bottom: none; padding-bottom: 16px; }
 .okr-label {
   font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
-  text-transform: uppercase; color: var(--text-3); margin-bottom: 6px;
+  color: var(--text-3); margin-bottom: 6px;
 }
 .okr-field input, .okr-field textarea {
   border: 1px solid var(--border-dark); background: var(--white); border-radius: 6px;
@@ -419,7 +419,7 @@ select {
 }
 
 /* PROFILE */
-.profile-wrap { position: relative; }
+.profile-wrap { position: relative; z-index: 300; }
 .profile-btn {
   display: flex; align-items: center; gap: 7px;
   background: transparent; border: 1px solid var(--border);
@@ -440,7 +440,7 @@ select {
   display: none; position: absolute; top: calc(100% + 6px); right: 0;
   background: var(--white); border: 1px solid var(--border);
   border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.08);
-  min-width: 140px; overflow: hidden; z-index: 50;
+  min-width: 140px; overflow: hidden; z-index: 200;
 }
 .profile-dropdown.open { display: block; }
 .profile-dropdown-item {
@@ -452,6 +452,30 @@ select {
   transition: background .15s;
 }
 .profile-dropdown-item:hover { background: var(--muted); }
+
+/* SUMMARY STATS */
+.sum-card {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 12px 14px 8px;
+}
+.sum-lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.07em; color: var(--text-3); margin-bottom: 8px; }
+.sum-val {
+  font-size: 36px; font-weight: 500; letter-spacing: -1px;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--text); line-height: 1; margin-bottom: 0;
+}
+
+/* STICKY BOTTOM BAR */
+.sticky-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 56px; z-index: 30;
+  background: var(--white); border-top: 1px solid var(--border);
+}
+.sticky-bar-inner {
+  max-width: 800px; margin: 0 auto;
+  padding: 0 24px; height: 100%;
+  display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+}
 </style>
 </head>
 <body>
@@ -526,23 +550,27 @@ select {
       <h1 id="hero-greeting" style="font-size:24px;font-weight:600;letter-spacing:-0.4px;margin-bottom:4px">Merhaba!</h1>
       <p>Hedeflerini ve neler yaptığını gir; AI mevcut performansını değerlendirerek önerilerde bulunsun.</p>
 
-      <div class="card" style="margin-top:24px;margin-bottom:0">
-        <div class="card-top-bar">Kişisel Bilgiler</div>
-        <div class="card-inner">
-          <div style="display:grid;grid-template-columns:1fr 1fr 0.5fr auto;gap:12px;align-items:end">
-            <div class="field">
-              <label>İsim</label>
-              <input type="text" id="e-first" placeholder="Örn: Cenk">
+      <!-- Hidden data for name (filled by login) -->
+      <input type="hidden" id="e-first" value="">
+      <input type="hidden" id="e-last" value="">
+      <select id="e-period" style="display:none"><option value="2026">2026</option></select>
+
+      <div class="card" style="margin-top:24px;margin-bottom:0" id="summary-card">
+        <div class="card-top-bar">Genel Özet</div>
+        <div class="card-inner" style="padding:14px 16px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div class="sum-card">
+              <div class="sum-lbl">TOPLAM OBJECTIVE</div>
+              <div class="sum-val" id="stat-obj">00</div>
             </div>
-            <div class="field">
-              <label>Soyisim</label>
-              <input type="text" id="e-last" placeholder="Örn: Yılmaz">
+            <div class="sum-card">
+              <div class="sum-lbl">TOPLAM KEY RESULT</div>
+              <div class="sum-val" id="stat-kr">00</div>
             </div>
-            <div class="field">
-              <label>Yıl</label>
-              <select id="e-period"><option value="2026">2026</option></select>
+            <div class="sum-card">
+              <div class="sum-lbl">GENEL SKOR</div>
+              <div class="sum-val" id="stat-score">--<span style="color:#d4d4d4;font-size:36px;font-weight:400">/100</span></div>
             </div>
-            <button class="btn btn-primary" onclick="tryAutoLoad()" style="height:36px;width:auto;padding:0 20px;font-size:14px;background:#171717;border-color:#171717" disabled>Filtrele</button>
           </div>
         </div>
       </div>
@@ -567,11 +595,13 @@ select {
 
     <div class="err" id="e-err"></div>
 
-    <div style="display:flex;gap:12px">
-      <button class="btn btn-add" onclick="saveGoals()" style="height:48px;padding:0 24px;font-size:14px;border-radius:10px;flex:1">Hedeflerimi Kaydet</button>
-      <button class="btn btn-primary" id="eval-btn" onclick="doEval()" style="flex:2">
-        AI ile değerlendir &nbsp;→
-      </button>
+    <div class="sticky-bar">
+      <div class="sticky-bar-inner">
+        <button class="btn btn-add" onclick="saveGoals()" style="width:180px;height:36px;padding:0;font-size:14px;border-radius:8px">Hedeflerimi Kaydet</button>
+        <button class="btn btn-primary" id="eval-btn" onclick="doEval()" style="width:180px;height:36px;padding:0;font-size:14px">
+          AI ile Değerlendir &nbsp;→
+        </button>
+      </div>
     </div>
 
     <div class="loading" id="spin">
@@ -743,7 +773,9 @@ async function lRegister() {
   sessionStorage.setItem('lu', JSON.stringify({u:u, f:f, l:l}));
   lDone(f, l);
 }
+var _currentUser = {first:'', last:''};
 function lDone(first, last) {
+  _currentUser = {first: first, last: last};
   document.getElementById('login-overlay').style.display = 'none';
   document.getElementById('e-first').value = first;
   document.getElementById('e-last').value  = last;
@@ -785,6 +817,8 @@ function showToast(msg, type) {
 
 // ── RESTORE RESULT ──
 function restoreResult(name, period, sc, r) {
+  var scoreEl = document.getElementById('stat-score');
+  if (scoreEl) scoreEl.innerHTML = sc + '<span style="color:#d4d4d4;font-size:36px;font-weight:400">/100</span>';
   document.getElementById('result').style.display = 'block';
   document.getElementById('sc-val').textContent   = sc;
   document.getElementById('r-name').textContent   = name;
@@ -859,23 +893,34 @@ function addGoal(d) {
       '</div>'+
     '</div>'+
     '<div class="goal-body" id="gb-'+n+'">'+
-      '<div class="okr-field"><div class="okr-label">Objective</div>'+
+      '<div class="okr-field"><div class="okr-label">OBJECTIVE</div>'+
         '<input type="text" id="go-'+n+'" placeholder="Örn: Müşteri memnuniyetini artırmak." value="'+vObj+'"></div>'+
-      '<div class="okr-field"><div class="okr-label">Key Result-1</div>'+
+      '<div class="okr-field"><div class="okr-label">KEY RESULT-1</div>'+
         '<input type="text" id="kr1-'+n+'" placeholder="Hedefin detayını yazabilirsin." value="'+vKr1+'"></div>'+
-      '<div class="okr-field"><div class="okr-label">Key Result-2</div>'+
+      '<div class="okr-field"><div class="okr-label">KEY RESULT-2</div>'+
         '<input type="text" id="kr2-'+n+'" placeholder="Hedefin detayını yazabilirsin." value="'+vKr2+'"></div>'+
-      '<div class="okr-field"><div class="okr-label">Key Result-3</div>'+
+      '<div class="okr-field"><div class="okr-label">KEY RESULT-3</div>'+
         '<input type="text" id="kr3-'+n+'" placeholder="Hedefin detayını yazabilirsin." value="'+vKr3+'"></div>'+
-      '<div class="okr-field" style="border-bottom:none;padding:10px 16px 0">'+
-        '<div class="okr-label">Neler Yaptın?</div>'+
-        '<textarea id="gdo-'+n+'" placeholder="Bu hedefe ulaşmak için yaptıklarını açıkla..." style="margin-bottom:16px">'+vDone+'</textarea>'+
+      '<div class="okr-field" style="border-bottom:none;padding:10px 16px 16px;background:#fafafa">'+
+        '<div class="okr-label">NELER YAPTIN?</div>'+
+        '<textarea id="gdo-'+n+'" placeholder="Bu hedefe ulaşmak için yaptıklarını açıkla..." style="margin-bottom:0;background:#fff">'+vDone+'</textarea>'+
       '</div>'+
     '</div>';
   document.getElementById('goals-wrap').appendChild(el);
+  updateSummary();
 }
 
-function removeGoal(n) { var e=document.getElementById('gc-'+n); if(e) e.remove(); }
+function updateSummary() {
+  var goals = getGoals();
+  var objCount = goals.length;
+  var krCount  = goals.reduce(function(s,g){ return s + (g.kr ? g.kr.filter(function(k){return k.trim();}).length : 0); }, 0);
+  var objEl = document.getElementById('stat-obj');
+  var krEl  = document.getElementById('stat-kr');
+  if (objEl) objEl.textContent = String(objCount).padStart(2,'0');
+  if (krEl)  krEl.textContent  = String(krCount).padStart(2,'0');
+}
+
+function removeGoal(n) { var e=document.getElementById('gc-'+n); if(e) e.remove(); updateSummary(); }
 
 function toggleGoal(n) {
   var body=document.getElementById('gb-'+n);
@@ -920,24 +965,25 @@ function showErr(m) {
 
 // ── SAVE GOALS ──
 async function saveGoals() {
-  var first=document.getElementById('e-first').value.trim();
-  var last=document.getElementById('e-last').value.trim();
-  var goals=getGoals();
-  var name=(first+' '+last).trim();
-  if(!first||!last) return showErr('Lütfen isim ve soyisim girin.');
-  if(!goals.length) return showErr('En az bir hedef ekleyin.');
-  var goalsSave=goals.map(function(g){return {objective:g.objective,kr:g.kr,done:g.done};});
-  var existing=await personalLoad(name)||{};
-  existing.goals=goalsSave;
-  if(!existing.period) existing.period=document.getElementById('e-period').value;
-  await personalSave(name,existing);
+  var first = _currentUser.first || document.getElementById('e-first').value.trim();
+  var last  = _currentUser.last  || document.getElementById('e-last').value.trim();
+  var goals = getGoals();
+  var name  = (first + ' ' + last).trim();
+  if (!name) return showErr('Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.');
+  if (!goals.length) return showErr('En az bir hedef ekleyin.');
+  var goalsSave = goals.map(function(g){ return {objective:g.objective, kr:g.kr, done:g.done}; });
+  var existing = await personalLoad(name) || {};
+  existing.goals = goalsSave;
+  existing.period = document.getElementById('e-period').value;
+  await personalSave(name, existing);
+  updateSummary();
   showToast('Hedefler kaydedildi ✓');
 }
 
 // ── EVALUATE ──
 async function doEval() {
-  var first=document.getElementById('e-first').value.trim();
-  var last=document.getElementById('e-last').value.trim();
+  var first=document.getElementById('e-first').value.trim() || _currentUser.first;
+  var last=document.getElementById('e-last').value.trim() || _currentUser.last;
   var period=document.getElementById('e-period').value;
   var goals=getGoals();
   var name=(first+' '+last).trim();
