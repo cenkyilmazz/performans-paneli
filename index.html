@@ -1263,16 +1263,21 @@ function setProfileName(first, last) {
 }
 function doLogout() {
   sessionStorage.removeItem('lu');
+  _currentUser = {first:'', last:'', username:''};
+  _pendingUsername = '';
+  // Show login overlay on login tab
   document.getElementById('login-overlay').style.display = 'flex';
   document.getElementById('profile-dropdown').classList.remove('open');
-  // Reset form
+  lSwitchTab('l');
+  // Reset page
   document.getElementById('e-first').value = '';
   document.getElementById('e-last').value = '';
   document.getElementById('goals-wrap').innerHTML = '';
   gcnt = 0;
-  addGoal();
   document.getElementById('result').style.display = 'none';
   document.getElementById('hedef-card').style.display = 'none';
+  checkEmpty();
+  updateSummary();
 }
 
 // Session check
