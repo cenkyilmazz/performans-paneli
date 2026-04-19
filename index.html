@@ -124,7 +124,7 @@ select {
   gap: 12px; margin-bottom: 24px;
 }
 .sec-row h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.4px; }
-.sec-row p  { font-size: 13px; color: var(--text-3); margin-top: 2px; }
+.sec-row p  { font-size: 14px; color: var(--text-3); margin-top: 2px; }
 
 /* ── GOAL CARD ── */
 .goal-card {
@@ -476,6 +476,14 @@ select {
   padding: 0 24px; height: 100%;
   display: flex; align-items: center; justify-content: flex-end; gap: 12px;
 }
+
+/* EMPTY STATE */
+.goals-empty {
+  border: 1px solid var(--border); border-radius: calc(var(--radius) + 2px);
+  padding: 40px 24px; text-align: center; display: none;
+}
+.goals-empty svg { color: var(--border-dark); margin-bottom: 14px; }
+.goals-empty p { font-size: 14px; color: var(--muted-fg, #737373); }
 </style>
 </head>
 <body>
@@ -592,12 +600,21 @@ select {
       </button>
     </div>
     <div id="goals-wrap"></div>
+    <div class="goals-empty" id="goals-empty">
+      <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M20.6897 20.7188C20.3447 21.0615 20.15 21.5273 20.1484 22.0137C20.1469 22.5 20.3386 22.967 20.6814 23.312C21.0242 23.657 21.49 23.8517 21.9763 23.8532C22.4626 23.8548 22.9297 23.663 23.2747 23.3202" stroke="#CECECE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M15.4744 15.5688C13.768 17.2957 12.8164 19.6289 12.8282 22.0567C12.8401 24.4844 13.8146 26.8082 15.5378 28.5183C17.261 30.2284 19.5922 31.1851 22.02 31.1785C24.4477 31.1718 26.7736 30.2023 28.4874 28.4828M31.0119 23.6959C31.2876 22.2292 31.201 20.7173 30.7597 19.2917C30.3183 17.866 29.5355 16.5696 28.4793 15.5152C27.4231 14.4608 26.1254 13.6803 24.699 13.2413C23.2726 12.8024 21.7605 12.7184 20.2943 12.9966" stroke="#CECECE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M10.3603 10.31C7.25865 13.3971 5.51036 17.5899 5.50005 21.966C5.48973 26.3421 7.21824 30.543 10.3053 33.6447C13.3924 36.7464 17.5852 38.4947 21.9613 38.505C26.3374 38.5153 30.5383 36.7868 33.64 33.6997M36.7255 29.4592C38.2985 26.3596 38.8525 22.8424 38.3083 19.4093C37.7642 15.9762 36.1498 12.8027 33.6954 10.3414C31.241 7.88005 28.072 6.25673 24.6405 5.70295C21.209 5.14918 17.6902 5.69324 14.5861 7.25754" stroke="#CECECE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M5.5 5.5L38.5 38.5" stroke="#CECECE" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+      <p>Hedefiniz bulunmamaktadır. Lütfen hedef <span onclick="addGoal()" style="color:#111;text-decoration:underline;cursor:pointer;font-weight:500">ekleyin</span>.</p>
+    </div>
 
     <div class="err" id="e-err"></div>
 
     <div class="sticky-bar">
       <div class="sticky-bar-inner">
-        <button class="btn btn-add" onclick="saveGoals()" style="width:180px;height:36px;padding:0;font-size:14px;border-radius:8px">Hedeflerimi Kaydet</button>
+        <button class="btn btn-add" id="save-btn" onclick="saveGoals()" style="width:180px;height:36px;padding:0;font-size:14px;border-radius:8px">Hedeflerimi Kaydet</button>
         <button class="btn btn-primary" id="eval-btn" onclick="doEval()" style="width:180px;height:36px;padding:0;font-size:14px">
           AI ile Değerlendir &nbsp;→
         </button>
@@ -908,6 +925,7 @@ function addGoal(d) {
     '</div>';
   document.getElementById('goals-wrap').appendChild(el);
   updateSummary();
+  checkEmpty();
 }
 
 function updateSummary() {
@@ -920,7 +938,21 @@ function updateSummary() {
   if (krEl)  krEl.textContent  = String(krCount).padStart(2,'0');
 }
 
-function removeGoal(n) { var e=document.getElementById('gc-'+n); if(e) e.remove(); updateSummary(); }
+function checkEmpty() {
+  var wrap    = document.getElementById('goals-wrap');
+  var empty   = document.getElementById('goals-empty');
+  var saveBtn = document.getElementById('save-btn');
+  if (!wrap || !empty) return;
+  var isEmpty = wrap.children.length === 0;
+  empty.style.display = isEmpty ? 'block' : 'none';
+  if (saveBtn) saveBtn.disabled = isEmpty;
+}
+
+function removeGoal(n) {
+  var e = document.getElementById('gc-'+n); if(e) e.remove();
+  updateSummary();
+  checkEmpty();
+}
 
 function toggleGoal(n) {
   var body=document.getElementById('gb-'+n);
