@@ -966,9 +966,22 @@ function restoreResult(name, period, sc, r) {
     document.getElementById('hedef-card').style.display = 'block';
     document.getElementById('hedef-rows').innerHTML = r.hedef_notlari.map(function(g) {
       var c2=col(g.not);
-      return '<div class="gsr"><div class="gsr-l"><div class="gsr-name">'+g.baslik+'</div><div class="gsr-cmt">'+g.yorum+'</div></div>'+
-        '<div class="pbar"><div class="pfill" style="width:'+g.not+'%;background:'+c2+'"></div></div>'+
-        '<div class="gsr-sc" style="color:'+c2+'">'+g.not+'</div></div>';
+      var extra='';
+      if(g.genel_degerlendirme) extra+='<div style="font-size:13px;line-height:1.6;color:var(--text);margin-top:8px;padding:10px 12px;background:var(--bg);border-radius:6px">'+g.genel_degerlendirme+'</div>';
+      if(g.guclu_yonler||g.gelisim_alanlari){
+        extra+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">';
+        if(g.guclu_yonler) extra+='<div><div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--green);margin-bottom:4px">GÜÇLÜ YÖNLER</div><div style="font-size:12px;line-height:1.6;color:var(--text-2)">'+g.guclu_yonler+'</div></div>';
+        if(g.gelisim_alanlari) extra+='<div><div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--yellow);margin-bottom:4px">GELİŞİM ALANLARI</div><div style="font-size:12px;line-height:1.6;color:var(--text-2)">'+g.gelisim_alanlari+'</div></div>';
+        extra+='</div>';
+      }
+      if(g.daha_yuksek_not_icin) extra+='<div style="margin-top:8px;padding:10px 12px;background:#f0fdf4;border-radius:6px;border-left:3px solid var(--green)"><div style="font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--green);margin-bottom:4px">85+ İÇİN NE YAPMALIYIM?</div><div style="font-size:12px;line-height:1.6;color:var(--text-2)">'+g.daha_yuksek_not_icin+'</div></div>';
+      return '<div style="padding:14px 0;border-bottom:1px solid var(--border)">'+
+        '<div class="gsr" style="padding:0;border:none">'+
+          '<div class="gsr-l"><div class="gsr-name">'+g.baslik+'</div><div class="gsr-cmt">'+(g.yorum||'')+'</div></div>'+
+          '<div class="pbar"><div class="pfill" style="width:'+g.not+'%;background:'+c2+'"></div></div>'+
+          '<div class="gsr-sc" style="color:'+c2+'">'+g.not+'</div>'+
+        '</div>'+extra+
+      '</div>';
     }).join('');
   }
 }
@@ -1146,23 +1159,50 @@ async function doEval() {
     var krText=g.kr.length?g.kr.map(function(k,j){return 'KR'+(j+1)+': '+k;}).join('\n'):'';
     return 'Hedef '+(i+1)+':\nObjective: '+g.objective+(krText?'\n'+krText:'')+'\nYapılanlar: '+g.done;
   }).join('\n\n');
-  var prompt='Sen çok katı bir performans değerlendirme koçusun ve "Raise the Bar" felsefesini benimsersin.\n\n'+
-    'KRİTİK DEĞERLENDIRME KURALLARI:\n'+
-    '1. GEÇERSİZ/ANLAMSIZ GİRİŞ: Eğer hedef, key result veya yapılanlar "test", anlamsız, boş veya gerçek bir iş içeriği taşımıyorsa 0-10 puan ver.\n'+
-    '2. RAISE THE BAR: Kişi tüm key result\'larını tamamlamış olsa bile hemen yüksek puan verme. Daha fazlasını yapabilir miydi?\n'+
-    '3. PUAN SKALASI (KESİNLİKLE UYGULA):\n'+
-    '   - 0-10: Geçersiz, anlamsız veya test girişi\n'+
-    '   - 11-40: Hedeflerin çok altında, somut çıktı yok\n'+
-    '   - 41-54: Hedeflerin altında, yetersiz çaba\n'+
-    '   - 55-69: Hedefleri kısmen karşıladı\n'+
-    '   - 70-79: Hedefleri karşıladı\n'+
-    '   - 80-89: Hedefleri aştı, inisiyatif aldı\n'+
-    '   - 90-100: İstisnai performans (çok nadir, gerçek etki kanıtı gerekli)\n'+
-    '4. 70+ puan için somut, ölçülebilir, gerçek iş çıktısı olması ZORUNLU.\n'+
-    '5. Puanı gerçekçi ve dürüst tut. Lütfen verilen bilgilerle orantılı değerlendir.\n\n'+
+  var prompt='Sen çok katı ve adil bir performans değerlendirme koçusun. "Raise the Bar" felsefesini uygularsın.\n\n'+
+    'PUANLAMA METODOLOJİSİ:\n'+
+    '1. GEÇERSİZ GİRİŞ: Hedef/KR/yapılanlar "test", anlamsız veya boşsa → 0-10 puan.\n'+
+    '2. HER KR EŞIT AĞIRLIK TAŞIR:\n'+
+    '   - 1 KR varsa: 100 puan üzerinden değerlendir\n'+
+    '   - 2 KR varsa: her biri 50 puan değerinde\n'+
+    '   - 3 KR varsa: her biri 33 puan değerinde\n'+
+    '   - KR sayısına göre eşit bölüştür\n'+
+    '3. HER KR İÇİN PUANLAMA:\n'+
+    '   - KR\'daki somut hedef/veri tamamen karşılandıysa ve üzerine çıkıldıysa → tam puan\n'+
+    '   - KR kısmen karşılandıysa → oransal puan (örn: %60 tamamlandıysa o KR\'ın %60\'ı)\n'+
+    '   - KR hiç karşılanmadıysa → 0\n'+
+    '4. GENEL SKOR YORUMU:\n'+
+    '   - 85-100: Beklenenin üzerinde tamamlama\n'+
+    '   - 65-84: Beklenen tamamlama oranı\n'+
+    '   - 40-64: Gelişim gerekli\n'+
+    '   - 0-39: Hedeflerin çok altında\n'+
+    '5. RAISE THE BAR: Tüm KR\'lar tamamlansa bile "daha ne yapılabilirdi?" sorusunu sor. Üzerine çıkmak için somut öneri sun.\n'+
+    '6. Puanlar gerçek iş çıktısına dayalı ve orantılı olmalı. Gerçekçi ve dürüst değerlendir.\n'+
+    '7. ZORUNLU DEĞERLENDİRME YAPISI — HER HEDEF İÇİN:\n'+
+    '   a) Genel değerlendirme: Bu hedefte ne kadar başarılı oldu? Somut çıktılar neler?\n'+
+    '   b) Güçlü yönler: Bu hedef özelinde neyi iyi yaptı?\n'+
+    '   c) Gelişim alanları: Hangi KR\'larda eksik kaldı veya daha fazlasını yapabilirdi?\n'+
+    '   d) Daha yüksek not için ne yapmalı: Aynı hedefte 85+ almak için somut, ölçülebilir 2-3 aksiyon öner.\n'+
+    '8. GENEL ÖZET: Tüm hedefler için ortak güçlü yönler ve en kritik gelişim alanı nedir?\n'+
+    '9. Amacımız kişinin daima yaptığının üzerine koymasını sağlamak. Yapıcı, motive edici ama dürüst ol.\n\n'+
     'Çalışan: '+name+'\nDönem: '+period+'\n\n'+gt+
     '\n\nDeğerlendirmeyi bu JSON formatında döndür (başka hiçbir şey yazma):\n'+
-    '{"genel_not":75,"ozet":"...","guclu_yonler":"...","gelisim_alanlari":"...","hedef_notlari":[{"baslik":"...","not":80,"yorum":"..."}],"sonraki_donem_onerileri":"..."}';
+    '{'+
+    '"genel_not":75,'+
+    '"ozet":"Tüm hedefler için genel bir değerlendirme özeti...",'+
+    '"guclu_yonler":"Genel güçlü yönler...",'+
+    '"gelisim_alanlari":"Genel gelişim alanları...",'+
+    '"hedef_notlari":[{'+
+      '"baslik":"Hedef başlığı",'+
+      '"not":80,'+
+      '"genel_degerlendirme":"Bu hedefte ne kadar başarılı oldu, somut çıktılar neler...",'+
+      '"guclu_yonler":"Bu hedef özelinde güçlü yönler...",'+
+      '"gelisim_alanlari":"Bu hedef özelinde gelişim alanları...",'+
+      '"yorum":"Kısa özet yorum...",'+
+      '"daha_yuksek_not_icin":"85+ almak için yapması gereken somut 2-3 aksiyon..."'+
+    '}],'+
+    '"sonraki_donem_onerileri":"Sonraki dönem için öncelikli odak alanları..."'+
+    '}';
   try {
     var res=await fetch('https://knrgndjwqnedypfjwwwy.supabase.co/functions/v1/smooth-processor',{
       method:'POST',
