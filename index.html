@@ -1146,15 +1146,20 @@ async function doEval() {
     var krText=g.kr.length?g.kr.map(function(k,j){return 'KR'+(j+1)+': '+k;}).join('\n'):'';
     return 'Hedef '+(i+1)+':\nObjective: '+g.objective+(krText?'\n'+krText:'')+'\nYapılanlar: '+g.done;
   }).join('\n\n');
-  var prompt='Sen deneyimli bir performans koçusun ve "Raise the Bar" felsefesini benimsersin.\n\n'+
-    'DEĞERLENDİRME PRENSİPLERİN:\n'+
-    '1. RAISE THE BAR: Kişi tüm key result\'larını tamamlamış olsa bile hemen yüksek puan verme. '+
-    'Daha fazlasını yapabilir miydi? Üstüne ne eklenebilirdi? Bu soruları sor.\n'+
-    '2. PUAN SKALASI: 0-54 = Hedeflerin çok altında | 55-69 = Hedefleri kısmen karşıladı | '+
-    '70-79 = Hedefleri karşıladı | 80-89 = Hedefleri aştı | 90-100 = İstisnai performans (nadir verilmeli)\n'+
-    '3. 80+ puan için kişinin key result\'ların ötesine geçmiş, inisiyatif almış, etki yaratmış olması gerekir.\n'+
-    '4. Her hedef için: "Bu kişi daha ne yapabilirdi?" sorusunu mutlaka sor ve bunu yoruma yansıt.\n'+
-    '5. Gelişim önerileri somut ve ölçülebilir olsun. "Daha iyi ol" değil, "X metriğini Y\'den Z\'ye çıkar" gibi.\n\n'+
+  var prompt='Sen çok katı bir performans değerlendirme koçusun ve "Raise the Bar" felsefesini benimsersin.\n\n'+
+    'KRİTİK DEĞERLENDIRME KURALLARI:\n'+
+    '1. GEÇERSİZ/ANLAMSIZ GİRİŞ: Eğer hedef, key result veya yapılanlar "test", anlamsız, boş veya gerçek bir iş içeriği taşımıyorsa 0-10 puan ver.\n'+
+    '2. RAISE THE BAR: Kişi tüm key result\'larını tamamlamış olsa bile hemen yüksek puan verme. Daha fazlasını yapabilir miydi?\n'+
+    '3. PUAN SKALASI (KESİNLİKLE UYGULA):\n'+
+    '   - 0-10: Geçersiz, anlamsız veya test girişi\n'+
+    '   - 11-40: Hedeflerin çok altında, somut çıktı yok\n'+
+    '   - 41-54: Hedeflerin altında, yetersiz çaba\n'+
+    '   - 55-69: Hedefleri kısmen karşıladı\n'+
+    '   - 70-79: Hedefleri karşıladı\n'+
+    '   - 80-89: Hedefleri aştı, inisiyatif aldı\n'+
+    '   - 90-100: İstisnai performans (çok nadir, gerçek etki kanıtı gerekli)\n'+
+    '4. 70+ puan için somut, ölçülebilir, gerçek iş çıktısı olması ZORUNLU.\n'+
+    '5. Puanı gerçekçi ve dürüst tut. Lütfen verilen bilgilerle orantılı değerlendir.\n\n'+
     'Çalışan: '+name+'\nDönem: '+period+'\n\n'+gt+
     '\n\nDeğerlendirmeyi bu JSON formatında döndür (başka hiçbir şey yazma):\n'+
     '{"genel_not":75,"ozet":"...","guclu_yonler":"...","gelisim_alanlari":"...","hedef_notlari":[{"baslik":"...","not":80,"yorum":"..."}],"sonraki_donem_onerileri":"..."}';
