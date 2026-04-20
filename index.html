@@ -1161,11 +1161,7 @@ async function doEval() {
   try {
     var res=await fetch('https://knrgndjwqnedypfjwwwy.supabase.co/functions/v1/smooth-processor',{
       method:'POST',
-      headers:{
-        'Content-Type':'application/json',
-        'apikey':'sb_publishable_05mAoYUtD1uuvQbYXoQq2Q_rPrjptgs',
-        'Authorization':'Bearer sb_publishable_05mAoYUtD1uuvQbYXoQq2Q_rPrjptgs'
-      },
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({prompt:prompt})
     });
     if(!res.ok){var t=await res.text();throw new Error('HTTP '+res.status+': '+t.substring(0,200));}
