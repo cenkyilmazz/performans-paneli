@@ -1159,17 +1159,19 @@ async function doEval() {
     '\n\nDeğerlendirmeyi bu JSON formatında döndür (başka hiçbir şey yazma):\n'+
     '{"genel_not":75,"ozet":"...","guclu_yonler":"...","gelisim_alanlari":"...","hedef_notlari":[{"baslik":"...","not":80,"yorum":"..."}],"sonraki_donem_onerileri":"..."}';
   try {
-    var res=await fetch('https://api.anthropic.com/v1/messages',{
+    var res=await fetch('https://knrgndjwqnedypfjwwwy.supabase.co/functions/v1/smooth-processor',{
       method:'POST',
-      headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,
-        system:'Sen Raise the Bar felsefesini benimseyen deneyimli bir performans koçusun. Hedefleri karşılamak yeterli değildir; her zaman daha fazlası sorgulanmalıdır. SADECE geçerli JSON döndür. { ile başla } ile bitir. Markdown kullanma.',
-        messages:[{role:'user',content:prompt}]})
+      headers:{
+        'Content-Type':'application/json',
+        'apikey':'sb_publishable_05mAoYUtD1uuvQbYXoQq2Q_rPrjptgs',
+        'Authorization':'Bearer sb_publishable_05mAoYUtD1uuvQbYXoQq2Q_rPrjptgs'
+      },
+      body:JSON.stringify({prompt:prompt})
     });
     if(!res.ok){var t=await res.text();throw new Error('HTTP '+res.status+': '+t.substring(0,200));}
     var data=await res.json();
-    if(data.error) throw new Error(data.error.message);
-    var raw=(data.content||[]).map(function(c){return c.text||'';}).join('').trim();
+    if(data.error) throw new Error(data.error);
+    var raw=(data.content||'').trim();
     if(!raw) throw new Error('Boş yanıt.');
     var clean=raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
     var r=JSON.parse(clean);
