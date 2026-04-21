@@ -128,13 +128,13 @@ select {
 
 /* ── GOAL CARD ── */
 .goal-card {
-  background: var(--white); border: 1px solid #eeeeee;
+  background: var(--white); border: 1px solid #E6E6E6;
   border-radius: var(--radius); box-shadow: 0 1px 2px rgba(0,0,0,.04);
   margin-bottom: 8px; overflow: hidden;
 }
 .goal-top {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 11px 16px; border-bottom: 1px solid #eeeeee;
+  padding: 0 16px; height: 52px;
   background: var(--white);
 }
 .goal-label { font-size: 14px; font-weight: 600; }
@@ -170,8 +170,10 @@ select {
   color: var(--text); margin-bottom: 6px;
 }
 .okr-field input, .okr-field textarea {
-  border: 1px solid var(--border-dark); background: var(--white); border-radius: 6px;
+  border: 1px solid rgb(212,212,212); background: var(--white); border-radius: 6px;
+  height: 35px; box-sizing: border-box;
 }
+.okr-field textarea { height: auto; }
 
 /* ── BUTTONS ── */
 .btn {
@@ -660,6 +662,13 @@ select {
   box-shadow: 0 2px 8px rgba(0,0,0,.15); position: relative; top: -6px;
 }
 .landing-btn:hover { background: #262626; }
+.goal-edit-btn .edit-normal { display: block; }
+.goal-edit-btn .edit-hover { display: none; }
+.goal-edit-btn:hover .edit-normal { display: none; }
+.goal-edit-btn:hover .edit-hover { display: block; }
+.goal-delete-btn:hover { background: #FFECEC !important; }
+#last-eval-btn:hover { background: #262626 !important; }
+#goal-modal-overlay .btn-add[onclick="submitGoalModal()"]:hover { background: #262626 !important; border-color: #262626 !important; }
 .landing-avatars {
   display: flex; align-items: center; justify-content: center;
   gap: 0; margin-bottom: 10px;
@@ -809,7 +818,7 @@ select {
         <h2>Hedefler</h2>
         <p>Hadi hedeflerini ve ilerlemeni gir. Performansını hızlıca analiz edeceğim.</p>
       </div>
-      <button class="btn btn-add" onclick="addGoal()">
+      <button class="btn btn-add" onclick="openGoalModal()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Hedef Ekle
       </button>
@@ -1161,6 +1170,7 @@ async function lDone(first, last) {
 async function loadGoalsAndShow(first, last) {
   document.getElementById('goals-wrap').innerHTML = '';
   gcnt = 0;
+  _typeCounts = {};
   try {
     var period = document.getElementById('e-period').value;
     var data = _currentUser.username ? await sbLoadGoals(_currentUser.username, period) : null;
@@ -1260,6 +1270,7 @@ function restoreResult(name, period, sc, r, openDrawer) {
 
 // ── PAGE SWITCH ──
 let gcnt = 0, mgrOk = false;
+var _typeCounts = {};
 const PWD = 'admin123';
 
 function switchPage(p) {
@@ -1285,23 +1296,51 @@ function checkPwd() {
 function addGoal(d) {
   gcnt++;
   var n = gcnt;
-  var startCollapsed = !!d; // collapse if loading saved data
+  var startCollapsed = !!d;
   var el = document.createElement('div');
   el.className = 'goal-card'; el.id = 'gc-'+n;
+  // Type label
+  var gType = (d && d.type) ? d.type : 'Business KPI';
+  var gWeight = (d && d.weight) ? d.weight : '';
+  _typeCounts[gType] = (_typeCounts[gType] || 0) + 1;
+  var typeLabel = gType + '-' + _typeCounts[gType];
+  var gScore = (d && d.score) ? parseInt(d.score) : 0;
+  var barPct = Math.min(100, Math.max(0, gScore));
+  var barColor = gScore>=75?'#40CC71':gScore>=50?'#F59E0B':gScore>0?'#EF4444':'#40CC71';
+  var scoreLblColor = gScore>0?col(gScore):'#111';
+
   var vObj  = d ? esc(d.objective) : '';
   var vKr1  = d && d.kr ? esc(d.kr[0]||'') : '';
   var vKr2  = d && d.kr ? esc(d.kr[1]||'') : '';
   var vKr3  = d && d.kr ? esc(d.kr[2]||'') : '';
   var vDone = d ? esc(d.done) : '';
   el.innerHTML =
-    '<div class="goal-top">'+
-      '<div class="goal-label">Hedef-'+n+'</div>'+
-      '<div class="goal-actions">'+
-        '<div class="goal-score" id="gsb-'+n+'" style="display:block;color:var(--text)">Skor: <span id="gsc-'+n+'" style="color:var(--text)">0</span>/100</div>'+
-        '<div style="width:1px;height:16px;background:var(--border-dark);flex-shrink:0"></div>'+
-        '<button class="rm-btn" onclick="removeGoal('+n+')">Kaldır</button>'+
-        '<div style="width:1px;height:16px;background:var(--border-dark);flex-shrink:0"></div>'+
-        '<button class="toggle-btn" onclick="toggleGoal('+n+')">'+
+    '<div class="goal-top" style="height:52px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:none">'+
+      '<div style="display:flex;align-items:center;gap:0;min-width:195px">'+
+        '<span style="font-size:14px;font-weight:500;font-family:Inter,sans-serif;color:#111;white-space:nowrap" id="gtitle-'+n+'">'+typeLabel+'</span>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:8px;flex:1">'+
+        '<div id="gweight-'+n+'" style="width:40px;height:20px;background:#F5F5F5;border:none;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;font-family:Inter,sans-serif;color:#111;flex-shrink:0">'+(gWeight?'%'+gWeight:'')+'</div>'+
+        '<div style="width:1px;height:28px;background:#E6E6E6;flex-shrink:0"></div>'+
+        '<div style="width:86px;height:6px;background:#EAEAEA;border-radius:100px;flex-shrink:0;position:relative;overflow:hidden">'+
+          '<div id="gbar-'+n+'" style="position:absolute;left:0;top:0;height:100%;background:'+barColor+';border-radius:100px;width:'+barPct+'%"></div>'+
+        '</div>'+
+        '<span style="font-size:13px;font-weight:500;font-family:Inter,sans-serif"><span id="gscore-lbl-'+n+'" style="color:'+scoreLblColor+'">'+gScore+'</span><span style="color:#111">/100</span></span>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:0;flex-shrink:0;margin-left:auto">'+
+        '<button class="toggle-btn" onclick="editGoal('+n+')" style="box-shadow:0 1px 2px rgba(26,26,26,.05);flex-shrink:0">'+
+          '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.66406 13.3361H5.33073L12.3307 6.33614C12.5058 6.16104 12.6447 5.95317 12.7395 5.7244C12.8342 5.49563 12.883 5.25043 12.883 5.00281C12.883 4.75518 12.8342 4.50998 12.7395 4.28121C12.6447 4.05244 12.5058 3.84457 12.3307 3.66947C12.1556 3.49438 11.9478 3.35548 11.719 3.26072C11.4902 3.16596 11.245 3.11719 10.9974 3.11719C10.7498 3.11719 10.5046 3.16596 10.2758 3.26072C10.047 3.35548 9.83916 3.49438 9.66406 3.66947L2.66406 10.6695V13.3361Z" stroke="#09090B" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 4.33594L11.6667 7.0026" stroke="#09090B" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
+        '</button>'+
+        '<div style="width:8px;flex-shrink:0"></div>'+
+        '<div style="width:1px;height:28px;background:#E6E6E6;flex-shrink:0"></div>'+
+        '<div style="width:8px;flex-shrink:0"></div>'+
+        '<button onclick="removeGoal('+n+')" class="goal-delete-btn" style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;background:#fff;border:1px solid #EF4444;border-radius:8px;cursor:pointer;padding:0;box-shadow:0 1px 2px rgba(26,26,26,.05);flex-shrink:0;transition:background .15s">'+
+          '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'+
+        '</button>'+
+        '<div style="width:8px;flex-shrink:0"></div>'+
+        '<div style="width:1px;height:28px;background:#E6E6E6;flex-shrink:0"></div>'+
+        '<div style="width:8px;flex-shrink:0"></div>'+
+        '<button class="toggle-btn" onclick="toggleGoal('+n+')" style="box-shadow:0 1px 2px rgba(26,26,26,.05);flex-shrink:0">'+
           '<svg id="ti-'+n+'" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition:transform .2s;transform:'+(startCollapsed?'rotate(0deg)':'rotate(180deg)')+';" data-open="'+(startCollapsed?'false':'true')+'"><polyline points="6 9 12 15 18 9"/></svg>'+
         '</button>'+
       '</div>'+
@@ -1359,7 +1398,7 @@ async function removeGoal(n) {
   try {
     var period = document.getElementById('e-period').value;
     var goals = getGoals();
-    var goalsSave = goals.map(function(g){ return {objective:g.objective, kr:g.kr, done:g.done}; });
+    var goalsSave = goals.map(function(g){ return {objective:g.objective, kr:g.kr, done:g.done, type:g.type, weight:g.weight, score:g.score||0}; });
     await sbSaveGoals(_currentUser.username, period, goalsSave, null, null);
   } catch(e) { console.warn('Auto-save error:', e); }
 }
@@ -1381,7 +1420,14 @@ function getGoals() {
     var objective=el.value.trim();
     var kr=['kr1','kr2','kr3'].map(function(k){return (document.getElementById(k+'-'+n)||{value:''}).value.trim();}).filter(Boolean);
     var done=(document.getElementById('gdo-'+n)||{value:''}).value.trim();
-    if(objective) g.push({objective:objective, kr:kr, done:done, _n:n});
+    var titleEl=document.getElementById('gtitle-'+n);
+    var weightEl=document.getElementById('gweight-'+n);
+    var type='Business KPI';
+    if(titleEl&&titleEl.textContent.indexOf('Culture')>-1) type='Culture Development';
+    var weight=weightEl?weightEl.textContent.replace('%','').trim():'';
+    var lblEl2=document.getElementById('gscore-lbl-'+n);
+    var score=lblEl2?parseInt(lblEl2.textContent)||0:0;
+    if(objective) g.push({objective:objective, kr:kr, done:done, type:type, weight:weight, score:score, _n:n});
   });
   return g;
 }
@@ -1410,7 +1456,7 @@ async function saveGoals() {
   var goals = getGoals();
   if (!goals.length) return showErr('En az bir hedef ekleyin.');
   var period = document.getElementById('e-period').value;
-  var goalsSave = goals.map(function(g){ return {objective:g.objective, kr:g.kr, done:g.done}; });
+  var goalsSave = goals.map(function(g){ return {objective:g.objective, kr:g.kr, done:g.done, type:g.type, weight:g.weight, score:g.score||0}; });
   try {
     await sbSaveGoals(_currentUser.username, period, goalsSave, null, null);
     updateSummary();
@@ -1514,11 +1560,19 @@ async function doEval() {
     if(r.hedef_notlari&&r.hedef_notlari.length){
       goals.forEach(function(g,i){
         var gn=r.hedef_notlari[i];if(!gn)return;
+        g.score=gn.not; // persist score on goal object
         var sc2=document.getElementById('gsc-'+g._n);
         if(sc2){sc2.textContent=gn.not;sc2.style.color=col(gn.not);}
+        // Update progress bar and score label
+        var barEl=document.getElementById('gbar-'+g._n);
+        var lblEl=document.getElementById('gscore-lbl-'+g._n);
+        var pct=Math.min(100,Math.max(0,gn.not));
+        var barColor=gn.not>=75?'#40CC71':gn.not>=50?'#F59E0B':'#EF4444';
+        if(barEl){barEl.style.width=pct+'%';barEl.style.background=barColor;}
+        if(lblEl){lblEl.textContent=gn.not;lblEl.style.color=col(gn.not);}
       });
     }
-    var goalsSave=goals.map(function(g){return {objective:g.objective,kr:g.kr,done:g.done};});
+    var goalsSave=goals.map(function(g){return {objective:g.objective,kr:g.kr,done:g.done,type:g.type,weight:g.weight,score:g.score||0};});
     try {
       await sbSaveGoals(_currentUser.username, period, goalsSave, r, sc);
       // Also save to shared team storage
@@ -1629,6 +1683,7 @@ function setProfileName(first, last) {
   if (a2) a2.textContent = initials;
 }
 function doLogout() {
+  _typeCounts = {};
   sessionStorage.removeItem('lu');
   _currentUser = {first:'', last:'', username:''};
   _pendingUsername = '';
@@ -1876,6 +1931,132 @@ function showProfileSetup() {
 })();
 
 // Supabase auth active - no local seed needed
+
+
+var _editGoalN = null;
+var _EDIT_SVG = '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><g filter="url(#filter0_d_2562_13096)"><mask id="path-1-inside-1_2562_13096" fill="white"><path d="M2 9C2 4.58172 5.58172 1 10 1H22C26.4183 1 30 4.58172 30 9V21C30 25.4183 26.4183 29 22 29H10C5.58172 29 2 25.4183 2 21V9Z"/></mask><path d="M2 9C2 4.58172 5.58172 1 10 1H22C26.4183 1 30 4.58172 30 9V21C30 25.4183 26.4183 29 22 29H10C5.58172 29 2 25.4183 2 21V9Z" fill="white"/><path d="M10 1V2H22V1V0H10V1ZM30 9H29V21H30H31V9H30ZM22 29V28H10V29V30H22V29ZM2 21H3V9H2H1V21H2ZM10 29V28C6.13401 28 3 24.866 3 21H2H1C1 25.9706 5.02944 30 10 30V29ZM30 21H29C29 24.866 25.866 28 22 28V29V30C26.9706 30 31 25.9706 31 21H30ZM22 1V2C25.866 2 29 5.13401 29 9H30H31C31 4.02944 26.9706 0 22 0V1ZM10 1V0C5.02944 0 1 4.02944 1 9H2H3C3 5.13401 6.13401 2 10 2V1Z" fill="#D4D4D4" mask="url(#path-1-inside-1_2562_13096)"/></g><path d="M10.6641 20.3361H13.3307L20.3307 13.3361C20.5058 13.161 20.6447 12.9532 20.7395 12.7244C20.8342 12.4956 20.883 12.2504 20.883 12.0028C20.883 11.7552 20.8342 11.51 20.7395 11.2812C20.6447 11.0524 20.5058 10.8446 20.3307 10.6695C20.1556 10.4944 19.9478 10.3555 19.719 10.2607C19.4902 10.166 19.245 10.1172 18.9974 10.1172C18.7498 10.1172 18.5046 10.166 18.2758 10.2607C18.047 10.3555 17.8392 10.4944 17.6641 10.6695L10.6641 17.6695V20.3361Z" stroke="#09090B" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 11.3359L19.6667 14.0026" stroke="#09090B" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><defs><filter id="filter0_d_2562_13096" x="0" y="0" width="32" height="32" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="1"/><feGaussianBlur stdDeviation="1"/><feColorMatrix type="matrix" values="0 0 0 0 0.102 0 0 0 0 0.102 0 0 0 0 0.102 0 0 0 0.1 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2562_13096"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2562_13096" result="shape"/></filter></defs></svg>';
+var _EDIT_HOVER_SVG = '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><g filter="url(#filter0_d_2562_13097)"><mask id="path-1-inside-1_2562_13097" fill="white"><path d="M2 9C2 4.58172 5.58172 1 10 1H22C26.4183 1 30 4.58172 30 9V21C30 25.4183 26.4183 29 22 29H10C5.58172 29 2 25.4183 2 21V9Z"/></mask><path d="M2 9C2 4.58172 5.58172 1 10 1H22C26.4183 1 30 4.58172 30 9V21C30 25.4183 26.4183 29 22 29H10C5.58172 29 2 25.4183 2 21V9Z" fill="#F6F6F6"/><path d="M10 1V2H22V1V0H10V1ZM30 9H29V21H30H31V9H30ZM22 29V28H10V29V30H22V29ZM2 21H3V9H2H1V21H2ZM10 29V28C6.13401 28 3 24.866 3 21H2H1C1 25.9706 5.02944 30 10 30V29ZM30 21H29C29 24.866 25.866 28 22 28V29V30C26.9706 30 31 25.9706 31 21H30ZM22 1V2C25.866 2 29 5.13401 29 9H30H31C31 4.02944 26.9706 0 22 0V1ZM10 1V0C5.02944 0 1 4.02944 1 9H2H3C3 5.13401 6.13401 2 10 2V1Z" fill="#D4D4D4" mask="url(#path-1-inside-1_2562_13097)"/></g><path d="M10.6641 20.3361H13.3307L20.3307 13.3361C20.5058 13.161 20.6447 12.9532 20.7395 12.7244C20.8342 12.4956 20.883 12.2504 20.883 12.0028C20.883 11.7552 20.8342 11.51 20.7395 11.2812C20.6447 11.0524 20.5058 10.8446 20.3307 10.6695C20.1556 10.4944 19.9478 10.3555 19.719 10.2607C19.4902 10.166 19.245 10.1172 18.9974 10.1172C18.7498 10.1172 18.5046 10.166 18.2758 10.2607C18.047 10.3555 17.8392 10.4944 17.6641 10.6695L10.6641 17.6695V20.3361Z" stroke="#09090B" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 11.3359L19.6667 14.0026" stroke="#09090B" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/><defs><filter id="filter0_d_2562_13097" x="0" y="0" width="32" height="32" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="1"/><feGaussianBlur stdDeviation="1"/><feColorMatrix type="matrix" values="0 0 0 0 0.102 0 0 0 0 0.102 0 0 0 0 0.102 0 0 0 0.1 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2562_13097"/><feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2562_13097" result="shape"/></filter></defs></svg>';
+
+function openGoalModal() {
+  _editGoalN = null;
+  document.getElementById('gm-type').value = 'Business KPI';
+  document.getElementById('gm-weight').value = '';
+  document.getElementById('gm-obj').value = '';
+  document.getElementById('gm-kr1').value = '';
+  document.getElementById('gm-kr2').value = '';
+  document.getElementById('gm-kr3').value = '';
+  document.getElementById('gm-what').value = '';
+  // Show add mode buttons
+  document.getElementById('gm-footer-add').style.display = 'flex';
+  document.getElementById('gm-footer-edit').style.display = 'none';
+  document.getElementById('goal-modal-title').textContent = 'Hedef Ekle';
+  var overlay = document.getElementById('goal-modal-overlay');
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function editGoal(n) {
+  _editGoalN = n;
+  // Populate form with existing values
+  var obj = document.getElementById('go-'+n);
+  var kr1 = document.getElementById('kr1-'+n);
+  var kr2 = document.getElementById('kr2-'+n);
+  var kr3 = document.getElementById('kr3-'+n);
+  var what = document.getElementById('gdo-'+n);
+  var titleEl = document.getElementById('gtitle-'+n);
+  var weightEl = document.getElementById('gweight-'+n);
+
+  if (obj) document.getElementById('gm-obj').value = obj.value;
+  if (kr1) document.getElementById('gm-kr1').value = kr1.value;
+  if (kr2) document.getElementById('gm-kr2').value = kr2.value;
+  if (kr3) document.getElementById('gm-kr3').value = kr3.value;
+  if (what) document.getElementById('gm-what').value = what.value;
+
+  // Set type from title label
+  if (titleEl) {
+    var titleText = titleEl.textContent || '';
+    if (titleText.indexOf('Culture') > -1) {
+      document.getElementById('gm-type').value = 'Culture Development';
+    } else {
+      document.getElementById('gm-type').value = 'Business KPI';
+    }
+  }
+  // Set weight
+  if (weightEl) {
+    var wText = weightEl.textContent.replace('%','').trim();
+    document.getElementById('gm-weight').value = wText;
+  }
+
+  // Show edit mode buttons
+  document.getElementById('gm-footer-add').style.display = 'none';
+  document.getElementById('gm-footer-edit').style.display = 'flex';
+  document.getElementById('goal-modal-title').textContent = 'Hedefi Düzenle';
+  document.getElementById('goal-modal-overlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function saveEditGoal() {
+  var n = _editGoalN;
+  if (!n) return;
+  var obj = document.getElementById('gm-obj').value.trim();
+  if (!obj) { showErr('Objective alanı zorunludur.'); return; }
+
+  // Update fields in the existing goal card
+  var objEl = document.getElementById('go-'+n);
+  var kr1El = document.getElementById('kr1-'+n);
+  var kr2El = document.getElementById('kr2-'+n);
+  var kr3El = document.getElementById('kr3-'+n);
+  var whatEl = document.getElementById('gdo-'+n);
+  var weightEl = document.getElementById('gweight-'+n);
+
+  if (objEl) objEl.value = obj;
+  if (kr1El) kr1El.value = document.getElementById('gm-kr1').value;
+  if (kr2El) kr2El.value = document.getElementById('gm-kr2').value;
+  if (kr3El) kr3El.value = document.getElementById('gm-kr3').value;
+  if (whatEl) whatEl.value = document.getElementById('gm-what').value;
+  var wgt = document.getElementById('gm-weight').value.trim();
+  if (weightEl) weightEl.textContent = wgt ? '%'+wgt : '';
+
+  closeGoalModal();
+  showToast('Hedef güncellendi ✓');
+}
+
+function closeGoalModal(e) {
+  if (e && e.target !== document.getElementById('goal-modal-overlay')) return;
+  document.getElementById('goal-modal-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function submitGoalModal() {
+  var obj  = document.getElementById('gm-obj').value.trim();
+  var kr1  = document.getElementById('gm-kr1').value.trim();
+  var kr2  = document.getElementById('gm-kr2').value.trim();
+  var kr3  = document.getElementById('gm-kr3').value.trim();
+  var what = document.getElementById('gm-what').value.trim();
+  var type = document.getElementById('gm-type').value;
+  var wgt  = document.getElementById('gm-weight').value.trim();
+
+  if (!obj) { showErr('Objective alanı zorunludur.'); return; }
+
+  addGoal({
+    objective: obj,
+    kr: [kr1, kr2, kr3],
+    done: what,
+    type: type,
+    weight: wgt
+  });
+
+  document.getElementById('goal-modal-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// Close on ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.getElementById('goal-modal-overlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+});
 
 </script>
 
@@ -2166,4 +2347,74 @@ function showProfileSetup() {
 </div>
 
 
+
+<!-- Goal Add Modal -->
+<div id="goal-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;align-items:center;justify-content:center" onclick="closeGoalModal(event)">
+  <div style="background:#fff;border-radius:16px;width:680px;max-width:95vw;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.18)" onclick="event.stopPropagation()">
+    <!-- Header -->
+    <div style="padding:20px;display:flex;align-items:center;justify-content:space-between">
+      <span id="goal-modal-title" style="font-size:18px;font-weight:700;color:#111;font-family:Inter,sans-serif;position:relative;top:2px">Hedef Ekle</span>
+      <button onclick="closeGoalModal()" style="background:transparent;border:none;cursor:pointer;padding:0;display:flex;align-items:center" aria-label="Kapat"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 8C0 3.58172 3.58172 0 8 0H16C20.4183 0 24 3.58172 24 8V16C24 20.4183 20.4183 24 16 24H8C3.58172 24 0 20.4183 0 16V8Z" fill="#E8E8E8"/><path d="M16 8L8 16M8 8L16 16" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <div style="height:1px;background:#eeeeee;margin:0 20px"></div>
+    <!-- Body -->
+    <div style="padding:16px 20px 0">
+      <!-- Tür + Ağırlık -->
+      <div style="display:flex;gap:12px;margin-bottom:12px">
+        <div style="flex:1">
+          <div class="okr-label" style="margin-bottom:6px">TÜR</div>
+          <div style="position:relative">
+            <select id="gm-type" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 32px 0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;background:#fff;cursor:pointer;outline:none;appearance:none;box-sizing:border-box">
+              <option value="Business KPI">Business KPI</option>
+              <option value="Culture Development">Culture Development</option>
+            </select>
+            <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div class="okr-label" style="margin-bottom:6px">AĞIRLIK</div>
+          <div style="position:relative">
+            <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:14px;color:#111;pointer-events:none;line-height:1">%</span>
+            <input id="gm-weight" type="number" min="1" max="100" placeholder="14" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 8px 0 22px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
+          </div>
+        </div>
+      </div>
+      <!-- Objective -->
+      <div style="margin-bottom:12px">
+        <div class="okr-label" style="margin-bottom:6px">OBJECTIVE</div>
+        <input id="gm-obj" type="text" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
+      </div>
+      <!-- KR1 -->
+      <div style="margin-bottom:12px">
+        <div class="okr-label" style="margin-bottom:6px">KEY RESULT-1</div>
+        <input id="gm-kr1" type="text" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
+      </div>
+      <!-- KR2 -->
+      <div style="margin-bottom:12px">
+        <div class="okr-label" style="margin-bottom:6px">KEY RESULT-2</div>
+        <input id="gm-kr2" type="text" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
+      </div>
+      <!-- KR3 -->
+      <div style="margin-bottom:12px">
+        <div class="okr-label" style="margin-bottom:6px">KEY RESULT-3</div>
+        <input id="gm-kr3" type="text" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
+      </div>
+      <!-- Neler Yaptın -->
+      <div style="margin-bottom:16px">
+        <div class="okr-label" style="margin-bottom:6px">NELER YAPTIN?</div>
+        <textarea id="gm-what" style="width:100%;height:110px;border:1px solid rgb(212,212,212);border-radius:6px;padding:8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;resize:none;box-sizing:border-box;background:#fff"></textarea>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div id="gm-footer-add" style="padding:0 20px 20px;display:flex;gap:12px">
+      <button onclick="closeGoalModal()" class="btn btn-add" style="flex:1;height:36px;font-size:14px;font-weight:600;cursor:pointer">Vazgeç</button>
+      <button onclick="submitGoalModal()" class="btn btn-add" style="flex:1;height:36px;font-size:14px;cursor:pointer;background:#111;color:#fff;border-color:#111">Hedef ekle</button>
+    </div>
+    <div id="gm-footer-edit" style="padding:0 20px 20px;display:none;gap:12px">
+      <button onclick="closeGoalModal()" class="btn btn-add" style="flex:1;height:36px;font-size:14px;font-weight:600;cursor:pointer">Vazgeç</button>
+      <button onclick="saveEditGoal()" class="btn btn-add" style="flex:1;height:36px;font-size:14px;cursor:pointer;background:#111;color:#fff;border-color:#111">Kaydet</button>
+    </div>
+  </div>
+</div>
 </body>
+</html>
