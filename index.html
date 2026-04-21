@@ -39,7 +39,7 @@ body {
 /* ── TOPNAV ── */
 .nav {
   background: var(--white);
-  border-bottom: 1px solid #eeeeee;
+  border-bottom: 1px solid #E6E6E6;
   height: 52px; display: flex; align-items: center;
   position: sticky; top: 0; z-index: 50;
 }
@@ -66,7 +66,7 @@ body {
 /* ── HERO BAND — grey background only here ── */
 .hero {
   background: #f6f6f6;
-  border-bottom: 1px solid #eeeeee;
+  border-bottom: 1px solid #E6E6E6;
   width: 100%;
 }
 .hero-inner {
@@ -1203,7 +1203,7 @@ async function tryAutoLoad() {
   gcnt = 0;
   data.goals.forEach(function(g) { addGoal(g); });
   if (data.result) restoreResult(name, data.period, data.score, data.result);
-  showToast('Kayıtlı veriler yüklendi ✓');
+  showToast('Kayıtlı veriler yüklendi');
 }
 
 // ── TOAST ──
@@ -1212,16 +1212,17 @@ function showToast(msg, type) {
   if (!t) {
     t = document.createElement('div');
     t.id = 'toast';
-    t.style.cssText = 'position:fixed;top:24px;right:24px;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:opacity .3s;box-shadow:0 4px 12px rgba(0,0,0,.12)';
+    t.style.cssText = 'position:fixed;top:24px;right:24px;padding:12px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;opacity:0;transition:opacity .3s;box-shadow:0 4px 12px rgba(0,0,0,.12);display:flex;align-items:center;gap:8px';
     document.body.appendChild(t);
   }
+  var icon = type === 'error' ? '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_toast_wrong)"><path d="M10.0026 6.0026L6.0026 10.0026M6.0026 6.0026L10.0026 10.0026M14.6693 8.0026C14.6693 11.6845 11.6845 14.6693 8.0026 14.6693C4.32071 14.6693 1.33594 11.6845 1.33594 8.0026C1.33594 4.32071 4.32071 1.33594 8.0026 1.33594C11.6845 1.33594 14.6693 4.32071 14.6693 8.0026Z" stroke="white" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="clip0_toast_wrong"><rect width="16" height="16" fill="white"/></clipPath></defs></svg>' : '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_toast_success)"><path d="M6.0026 8.0026L7.33594 9.33594L10.0026 6.66927M14.6693 8.0026C14.6693 11.6845 11.6845 14.6693 8.0026 14.6693C4.32071 14.6693 1.33594 11.6845 1.33594 8.0026C1.33594 4.32071 4.32071 1.33594 8.0026 1.33594C11.6845 1.33594 14.6693 4.32071 14.6693 8.0026Z" stroke="white" stroke-width="1.33" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="clip0_toast_success"><rect width="16" height="16" fill="white"/></clipPath></defs></svg>';
   if (type === 'error') {
     t.style.background = '#F51D1D';
   } else {
     t.style.background = 'var(--green)';
   }
   t.style.color = 'white';
-  t.textContent = msg;
+  t.innerHTML = icon + '<span>' + msg + '</span>';
   t.style.opacity = '1';
   clearTimeout(t._timer);
   t._timer = setTimeout(function() { t.style.opacity='0'; }, 3000);
@@ -1408,6 +1409,7 @@ async function removeGoal(n) {
     var goals = getGoals();
     var goalsSave = goals.map(function(g){ return {objective:g.objective, kr:g.kr, done:g.done, type:g.type, weight:g.weight, score:g.score||0}; });
     await sbSaveGoals(_currentUser.username, period, goalsSave, null, null);
+    showToast('Hedef başarıyla silinmiştir');
   } catch(e) { console.warn('Auto-save error:', e); }
 }
 
@@ -1468,7 +1470,7 @@ async function saveGoals() {
   try {
     await sbSaveGoals(_currentUser.username, period, goalsSave, null, null);
     updateSummary();
-    showToast('Hedefler kaydedildi ✓');
+    showToast('Hedefler kaydedildi');
   } catch(e) { showErr('Kayıt hatası: ' + e.message); }
 }
 
@@ -1599,7 +1601,7 @@ async function doEval() {
       if(idx>=0) records[idx]=entry; else records.unshift(entry);
       await tSave(records);
     } catch(e) { console.warn('Save error:', e); }
-    showToast('Değerlendirme kaydedildi ✓');
+    showToast('Değerlendirme kaydedildi');
     document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'});
   } catch(err){
     
@@ -1889,7 +1891,7 @@ function parseProfileCSV(file) {
       var fname = file.name.length > 45 ? file.name.substring(0, 45) + '...' : file.name;
         document.getElementById('upload-success-text').textContent = fname;
       document.getElementById('upload-success-state').style.display = 'flex';
-        showToast('Doküman başarıyla eklenmiştir ✓');
+        showToast('Doküman başarıyla eklenmiştir');
     }, 300);
   };
   reader.readAsText(file);
@@ -1908,7 +1910,7 @@ async function saveProfile() {
     existing.profile._name = name;
     await personalSave(name, existing);
     document.getElementById('profile-setup-overlay').style.display = 'none';
-    showToast('Profil kaydedildi ✓');
+    showToast('Profil kaydedildi');
     loadGoalsAndShow(_currentUser.first, _currentUser.last);
   } catch(e) {
     showErr('Profil kaydedilemedi: ' + e.message);
@@ -2061,7 +2063,7 @@ function saveEditGoal() {
   if (weightEl) weightEl.textContent = wgt ? '%'+wgt : '';
 
   closeGoalModal();
-  showToast('Hedef güncellendi ✓');
+  showToast('Hedef güncellendi');
 }
 
 function closeGoalModal(e) {
@@ -2091,6 +2093,7 @@ function submitGoalModal() {
 
   document.getElementById('goal-modal-overlay').style.display = 'none';
   document.body.style.overflow = '';
+  showToast('Hedef başarıyla eklenmiştir');
 }
 
 // Close on ESC
