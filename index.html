@@ -441,6 +441,11 @@ select {
   padding: 5px 10px 5px 8px; box-shadow: 0 1px 2px rgba(0,0,0,.08);
   cursor: pointer; font-family: inherit; font-size: 13px;
   font-weight: 500; transition: background .15s; white-space: nowrap;
+  position: relative;
+}
+.profile-btn::after {
+  content: ''; position: absolute;
+  inset: -8px;
 }
 .profile-btn:hover { background: #f6f6f6; }
 .profile-avatar {
