@@ -108,6 +108,7 @@ input[type="text"], input[type="password"], textarea, select {
   transition: border-color .15s, box-shadow .15s;
 }
 input::placeholder, textarea::placeholder { color: var(--text-4); }
+input[type="password"] { padding-top: 0px; padding-bottom: 16px; }
 input:focus, textarea:focus, select:focus {
   border-color: var(--text); box-shadow: 0 0 0 2px rgba(23,23,23,.07);
 }
@@ -1586,32 +1587,60 @@ async function doEval() {
     var krText=g.kr.length?g.kr.map(function(k,j){return 'KR'+(j+1)+': '+k;}).join('\n'):'';
     return 'Hedef '+(i+1)+':\nObjective: '+g.objective+(krText?'\n'+krText:'')+'\nYapılanlar: '+g.done;
   }).join('\n\n');
-  var prompt='Sen çok katı ve adil bir performans değerlendirme koçusun. "Raise the Bar" felsefesini uygularsın.\n\n'+
-    'PUANLAMA METODOLOJİSİ:\n'+
-    '1. GEÇERSİZ GİRİŞ: Hedef/KR/yapılanlar "test", anlamsız veya boşsa → 0-10 puan.\n'+
-    '2. HER KR EŞIT AĞIRLIK TAŞIR:\n'+
-    '   - 1 KR varsa: 100 puan üzerinden değerlendir\n'+
-    '   - 2 KR varsa: her biri 50 puan değerinde\n'+
-    '   - 3 KR varsa: her biri 33 puan değerinde\n'+
-    '   - KR sayısına göre eşit bölüştür\n'+
-    '3. HER KR İÇİN PUANLAMA:\n'+
-    '   - KR\'daki somut hedef/veri tamamen karşılandıysa ve üzerine çıkıldıysa → tam puan\n'+
-    '   - KR kısmen karşılandıysa → oransal puan (örn: %60 tamamlandıysa o KR\'ın %60\'ı)\n'+
-    '   - KR hiç karşılanmadıysa → 0\n'+
-    '4. GENEL SKOR YORUMU:\n'+
-    '   - 85-100: Beklenenin üzerinde tamamlama\n'+
-    '   - 65-84: Beklenen tamamlama oranı\n'+
-    '   - 40-64: Gelişim gerekli\n'+
-    '   - 0-39: Hedeflerin çok altında\n'+
-    '5. RAISE THE BAR: Tüm KR\'lar tamamlansa bile "daha ne yapılabilirdi?" sorusunu sor. Üzerine çıkmak için somut öneri sun.\n'+
-    '6. Puanlar gerçek iş çıktısına dayalı ve orantılı olmalı. Gerçekçi ve dürüst değerlendir.\n'+
-    '7. ZORUNLU DEĞERLENDİRME YAPISI — HER HEDEF İÇİN:\n'+
-    '   a) Genel değerlendirme: Bu hedefte ne kadar başarılı oldu? Somut çıktılar neler?\n'+
-    '   b) Güçlü yönler: Bu hedef özelinde neyi iyi yaptı?\n'+
-    '   c) Gelişim alanları: Hangi KR\'larda eksik kaldı veya daha fazlasını yapabilirdi?\n'+
-    '   d) Daha yüksek not için ne yapmalı: Aynı hedefte 85+ almak için somut, ölçülebilir 2-3 aksiyon öner.\n'+
-    '8. GENEL ÖZET: Tüm hedefler için ortak güçlü yönler ve en kritik gelişim alanı nedir?\n'+
-    '9. Amacımız kişinin daima yaptığının üzerine koymasını sağlamak. Yapıcı, motive edici ama dürüst ol.\n\n'+
+  var prompt='Sen çok katı, adil ve dürüst bir performans değerlendirme koçusun. Temel felsefenin adı "Raise the Bar": hedefleri tamamlamak yeterli değil, üzerine çıkmak asıl başarıdır.\n\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'PUANLAMA MATEMATİĞİ\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━\n\n'+
+'TAVAN KURALI — EN KRİTİK KURAL:\n'+
+'• Bir kişi tüm KR\'larını tam olarak karşıladıysa (ne az ne fazla) → hedef notu MAX 80 olabilir.\n'+
+'• 81-100 arası not YALNIZCA KR\'larda belirlenen hedefin üzerine çıkıldığında verilir.\n'+
+'• Bu kuralı asla esnetme. Tüm hedeflerini tam yaptıysa genel not maximum 80\'dir.\n\n'+
+'KR BAZLI PUANLAMA (her hedef için 0-100):\n'+
+'Adım 1 — Her KR\'ı ayrı ayrı değerlendir (eşit ağırlık):\n'+
+'   • 3 KR varsa: her biri 33.3 puan değerinde\n'+
+'   • 2 KR varsa: her biri 50 puan değerinde\n'+
+'   • 1 KR varsa: 100 puan değerinde\n'+
+'Adım 2 — Her KR için tamamlanma oranı belirle:\n'+
+'   • Hedefin %100\'ünü tam yaptı → o KR\'dan 80/100 puan (tavan kuralı)\n'+
+'   • Hedefin %120\'sini yaptı → o KR\'dan 96/100 puan\n'+
+'   • Hedefin %150+\'ini yaptı → o KR\'dan 100/100 puan\n'+
+'   • Hedefin %80\'ini yaptı → o KR\'dan 64/100 puan (oransal: 80 × 0.80)\n'+
+'   • Hedefin %50\'sini yaptı → o KR\'dan 40/100 puan\n'+
+'   • Hedefin %39\'u altında kaldı → o KR kritik eksik\n'+
+'   • Hiç yapmadı veya anlamsız giriş → 0\n'+
+'Adım 3 — KR puanlarını topla → hedef notu\n\n'+
+'PERFORMANS BANTLARI:\n'+
+'   • 81-100: Hedeflerin üzerine çıktı — gerçekten ekstra değer yarattı\n'+
+'   • 65-80: Beklenen performans — hedeflerini karşıladı ama aşmadı\n'+
+'   • 40-64: Gelişim gerekli — beklentinin altında kaldı\n'+
+'   • 0-39: Kritik eksik — hedef özelinde acil aksiyon şart\n\n'+
+'AĞIRLIK FARKI:\n'+
+'• Sistemde normalde 5 Business KPI + 3 Culture Development = 8 hedef olur.\n'+
+'• Kişinin girdiği hedeflerin türünü (Business KPI / Culture Development) dikkate al.\n'+
+'• Business KPI hedefleri sayısal ve ölçülebilir; Culture Development hedefleri davranışsal/nitelikseldir.\n'+
+'• Sayısal KR\'larda tamamlanma oranını kesin hesapla. Niteliksel KR\'larda somut kanıt/çıktı ara.\n\n'+
+'SKOR VERİRKEN ÇOK DİKKATLİ OL:\n'+
+'• Bol keseden skor verme. Kişi gerçekten challenge edildiğini hissettirmeli.\n'+
+'• "İyi iş" dedirtmek için 90+ verme. Bunun için KR\'larını en az %150 aşmış olmalı.\n'+
+'• Şüphe durumunda bir bant aşağı ver.\n\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'KİŞİSEL PROFİL ENTEGRASYONU\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'• Kişinin çalıştığı ürünler, güçlü yönleri ve gelişim alanları değerlendirmenin ayrılmaz parçasıdır.\n'+
+'• Her hedefi değerlendirirken profildeki bilgilerle örtüştür:\n'+
+'   - Hedef, kişinin güçlü alanlarıyla ilgiliyse: daha fazlasını bekle, çıtayı yüksek tut.\n'+
+'   - Hedef, kişinin gelişim alanıyla ilgiliyse: ekstra somut öğrenme/gelişim önerileri sun.\n'+
+'   - Hedef, çalıştığı ürünlerle bağlantılıysa: ürüne özel somut aksiyon öner.\n'+
+'• Örnek: Kişi UX Research hedefi koymuş ama profilde bu alanda zayıf görünüyorsa → gelişim önerilerini UX Research\'e odakla, somut kaynak/yöntem öner.\n\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'HER HEDEF İÇİN ZORUNLU YAPI\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'a) Genel değerlendirme: KR\'lar ne kadar karşılandı? Somut çıktılar neler? Neden bu skor?\n'+
+'b) Güçlü yönler: Bu hedef özelinde gerçekten iyi olan neydi?\n'+
+'c) Gelişim alanları: Hangi KR eksik kaldı, neden, nasıl kapatılır?\n'+
+'d) Daha yüksek not için: 81+ almak için ne yapmalıydı / yapmalı? Somut, ölçülebilir 2-3 aksiyon.\n'+
+'e) Profil bağlantısı: Bu hedef kişinin ürünleri/güçlü yönleri/gelişim alanlarıyla nasıl örtüşüyor? Kişiye özel 1-2 öneri.\n\n'+
+'Amacımız: Kişi değerlendirmeyi okuyunca "bu benim için yazılmış" demeli, motive olmalı ve bir sonraki dönem için net bir yol haritası görmeli.\n\n'+ 
     'Çalışan: '+name+'\nDönem: '+period+'\n\n'+gt+
     (await (async function(){
       try {
@@ -1778,16 +1807,34 @@ function showLastEval() {
 
 function toggleProfile(e) {
   e.stopPropagation();
-  var dd = document.getElementById('profile-dropdown');
-  var btn = document.getElementById('profile-btn');
+  // Find the dropdown inside the same profile-wrap as the clicked button
+  var wrap = e.currentTarget.closest('.profile-wrap') || e.currentTarget.parentElement;
+  var dd = wrap.querySelector('.profile-dropdown');
+  var btn = wrap.querySelector('.profile-btn');
+  if (!dd || !btn) return;
   dd.style.width = btn.offsetWidth + 'px';
   dd.classList.toggle('open');
 }
 document.addEventListener('click', function() {
-  var dd = document.getElementById('profile-dropdown');
-  if (dd) dd.classList.remove('open');
+  document.querySelectorAll('.profile-dropdown').forEach(function(dd) {
+    dd.classList.remove('open');
+  });
 });
 // Click only open/close - no hover
+document.addEventListener('DOMContentLoaded', function() {
+  function bindWrap(wrapId) {
+    var wrap = document.getElementById(wrapId);
+    if (!wrap) return;
+    wrap.addEventListener('click', function(e) {
+      var dd = wrap.querySelector('.profile-dropdown');
+      var btn = wrap.querySelector('.profile-btn');
+      if (dd && btn) { dd.style.width = btn.offsetWidth + 'px'; dd.classList.add('open'); }
+      e.stopPropagation();
+    });
+  }
+  bindWrap('profile-wrap');
+  bindWrap('profile-wrap-2');
+});
 function setProfileName(first, last) {
   var name = (first + ' ' + last).trim();
   var initials = ((first[0]||'') + (last[0]||'')).toUpperCase() || '?';
@@ -2498,8 +2545,8 @@ document.addEventListener('keydown', function(e) {
 </svg>
     </div>
     <div style="display:flex;align-items:center;gap:16px">
-      <div class="profile-wrap" style="position:relative;z-index:500;display:inline-block">
-        <button class="profile-btn" onclick="toggleProfile(event)">
+      <div class="profile-wrap" id="profile-wrap-2" style="position:relative;z-index:500;display:inline-block">
+        <button class="profile-btn" id="profile-btn-2" onclick="toggleProfile(event)">
           <div class="profile-avatar" id="profile-avatar-2" style="width:24px;height:24px;border-radius:50%;background:#18181b;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">?</div>
           <span id="profile-name-2" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Profil</span>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -2529,14 +2576,14 @@ document.addEventListener('keydown', function(e) {
     <!-- Logo overlapping top -->
     <div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);z-index:10">
       <svg width="76" height="92" viewBox="0 0 76 92" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M64.8697 11.1299C79.4762 25.7364 79.7051 49.2748 65.5581 64.1623L65.5768 64.1629L37.9996 91.7401L10.4224 64.1629L10.4411 64.1623C-3.70592 49.2748 -3.47696 25.7364 11.1295 11.1299C25.9695 -3.70998 50.0297 -3.70998 64.8697 11.1299Z" fill="url(#setup_icon_gradient)"/>
+<path d="M64.8697 11.1299C79.4762 25.7364 79.7051 49.2748 65.5581 64.1623L65.5768 64.1629L37.9996 91.7401L10.4224 64.1629L10.4411 64.1623C-3.70592 49.2748 -3.47696 25.7364 11.1295 11.1299C25.9695 -3.70998 50.0297 -3.70998 64.8697 11.1299Z" fill="url(#setup_icon_gradient_2)"/>
 <path d="M36.0859 40.0026C36.0859 40.5109 36.2879 40.9984 36.6473 41.3579C37.0068 41.7173 37.4943 41.9193 38.0026 41.9193C38.5109 41.9193 38.9984 41.7173 39.3579 41.3579C39.7173 40.9984 39.9193 40.5109 39.9193 40.0026C39.9193 39.4943 39.7173 39.0068 39.3579 38.6473C38.9984 38.2879 38.5109 38.0859 38.0026 38.0859C37.4943 38.0859 37.0068 38.2879 36.6473 38.6473C36.2879 39.0068 36.0859 39.4943 36.0859 40.0026Z" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M37.9974 30.4141C36.102 30.4141 34.2492 30.9761 32.6732 32.0291C31.0972 33.0822 29.8689 34.5789 29.1436 36.33C28.4182 38.0811 28.2284 40.008 28.5982 41.867C28.968 43.726 29.8807 45.4336 31.221 46.7738C32.5612 48.1141 34.2688 49.0268 36.1278 49.3966C37.9868 49.7664 39.9137 49.5766 41.6648 48.8512C43.4159 48.1259 44.9126 46.8976 45.9657 45.3216C47.0187 43.7456 47.5807 41.8928 47.5807 39.9974" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M39.9154 22.8576C36.362 22.4589 32.7726 23.1743 29.6436 24.9049C26.5146 26.6354 24.0007 29.2956 22.4496 32.5173C20.8986 35.739 20.387 39.3631 20.9857 42.8883C21.5844 46.4135 23.2638 49.6655 25.7915 52.1945C28.3193 54.7235 31.5705 56.4046 35.0953 57.005C38.6202 57.6055 42.2446 57.0958 45.4671 55.5463C48.6896 53.9969 51.351 51.4844 53.0831 48.3562C54.8152 45.2281 55.5325 41.639 55.1356 38.0855" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M43.75 28.5V34.25H49.5L55.25 28.5H49.5V22.75L43.75 28.5Z" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M43.75 34.25L38 40" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 <defs>
-<linearGradient id="setup_icon_gradient" x1="68.9138" y1="-24.9093" x2="78.2927" y2="80.4507" gradientUnits="userSpaceOnUse">
+<linearGradient id="setup_icon_gradient_2" x1="68.9138" y1="-24.9093" x2="78.2927" y2="80.4507" gradientUnits="userSpaceOnUse">
 <stop stop-color="#F9277E"/>
 <stop offset="0.245192" stop-color="#C347F5"/>
 <stop offset="0.639423" stop-color="#F32F19"/>
