@@ -168,12 +168,21 @@ select {
 
 .okr-field { padding: 10px 16px 16px; border-bottom: 1px solid #eeeeee; }
 .okr-field:last-child { border-bottom: none; padding-bottom: 16px; }
+.goal-body { border-top: 1px solid #E6E6E6; background: #FAFAFA; }
+.goal-section { padding: 16px 32px; border-bottom: none; background: #FAFAFA; position: relative; }
+.goal-section:last-child { background: #fff; padding-bottom: 20px; }
+.goal-section-divider { height: 1px; background: #E6E6E6; margin: 0 32px; }
+.goal-section-divider-full { height: 1px; background: #E6E6E6; margin: 0; }
+.goal-section-label { font-size: 10px; font-weight: 600; letter-spacing: 0.07em; color: var(--text); font-family: Inter, sans-serif; margin-bottom: 8px; text-transform: uppercase; }
+.goal-section-text { font-size: 14px; font-weight: 400; color: #111; font-family: Inter, sans-serif; line-height: 1.6; }
+.goal-kr-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 4px; }
+.goal-kr-item { border: 1px solid #D4D4D4; border-radius: 8px; padding: 0 14px; height: 35px; display: flex; align-items: center; font-size: 14px; color: #111; font-family: Inter, sans-serif; background: #fff; box-shadow: 0 1px 2px rgba(26,26,26,.05); }
 .okr-label {
   font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
   color: var(--text); margin-bottom: 6px;
 }
 .okr-field input, .okr-field textarea {
-  border: 1px solid rgb(212,212,212); background: var(--white); border-radius: 6px;
+  border: 1px solid #D4D4D4; background: var(--white); border-radius: 6px; box-shadow: 0 1px 2px rgba(26,26,26,.05);
   height: 35px; box-sizing: border-box;
 }
 .okr-field textarea { height: auto; }
@@ -635,14 +644,14 @@ select {
 .upload-success.show { display: flex; }
 .profile-setup-actions { display: flex; gap: 10px; width: 444px; box-sizing: border-box; }
 .profile-setup-skip {
-  flex: 1; padding: 10px; font-size: 14px; font-weight: 500;
+  flex: 1; height: 35px; padding: 0 10px; font-size: 14px; font-weight: 500;
   background: var(--white); border: 1px solid var(--border-dark);
   border-radius: 8px; cursor: pointer; font-family: inherit;
   color: var(--text-3); transition: background .15s;
 }
 .profile-setup-skip:hover { background: var(--bg); }
 .profile-setup-save {
-  flex: 2; padding: 10px; font-size: 14px; font-weight: 600;
+  flex: 2; height: 35px; padding: 0 10px; font-size: 14px; font-weight: 600;
   background: #4601B6; color: white; border: none;
   border-radius: 8px; cursor: pointer; font-family: inherit;
   transition: background .15s; opacity: .5; pointer-events: none;
@@ -1370,17 +1379,25 @@ function addGoal(d) {
       '</div>'+
     '</div>'+
     '<div class="goal-body" id="gb-'+n+'">'+
-      '<div class="okr-field"><div class="okr-label">OBJECTIVE</div>'+
-        '<input type="text" id="go-'+n+'" placeholder="Örn: Müşteri memnuniyetini artırmak." value="'+vObj+'"></div>'+
-      '<div class="okr-field"><div class="okr-label">KEY RESULT-1</div>'+
-        '<input type="text" id="kr1-'+n+'" placeholder="Hedefin detayını yazabilirsin." value="'+vKr1+'"></div>'+
-      '<div class="okr-field"><div class="okr-label">KEY RESULT-2</div>'+
-        '<input type="text" id="kr2-'+n+'" placeholder="Hedefin detayını yazabilirsin." value="'+vKr2+'"></div>'+
-      '<div class="okr-field"><div class="okr-label">KEY RESULT-3</div>'+
-        '<input type="text" id="kr3-'+n+'" placeholder="Hedefin detayını yazabilirsin." value="'+vKr3+'"></div>'+
-      '<div class="okr-field" style="border-bottom:none;padding:10px 16px 16px;background:#fafafa">'+
-        '<div class="okr-label">NELER YAPTIN?</div>'+
-        '<textarea id="gdo-'+n+'" placeholder="Bu hedefe ulaşmak için yaptıklarını açıkla..." style="margin-bottom:0;background:#fff">'+vDone+'</textarea>'+
+      '<div class="goal-section">'+
+        '<div class="goal-section-label">Objective</div>'+
+        '<div class="goal-section-text" id="go-display-'+n+'">'+vObj+'</div>'+
+        '<input type="hidden" id="go-'+n+'" value="'+vObj+'">'+
+      '</div>'+
+      '<div class="goal-section-divider"></div>'+
+      '<div class="goal-section">'+
+        '<div class="goal-section-label">Key Results</div>'+
+        '<div class="goal-kr-list">'+
+          (vKr1 ? '<div class="goal-kr-item"><input type="hidden" id="kr1-'+n+'" value="'+vKr1+'">'+vKr1+'</div>' : '<input type="hidden" id="kr1-'+n+'" value="">')+
+          (vKr2 ? '<div class="goal-kr-item"><input type="hidden" id="kr2-'+n+'" value="'+vKr2+'">'+vKr2+'</div>' : '<input type="hidden" id="kr2-'+n+'" value="">')+
+          (vKr3 ? '<div class="goal-kr-item"><input type="hidden" id="kr3-'+n+'" value="'+vKr3+'">'+vKr3+'</div>' : '<input type="hidden" id="kr3-'+n+'" value="">')+
+        '</div>'+
+      '</div>'+
+      '<div class="goal-section-divider-full"></div>'+
+      '<div class="goal-section">'+
+        '<div class="goal-section-label">Neler Yaptın?</div>'+
+        '<div class="goal-section-text" id="gdo-display-'+n+'">'+vDone+'</div>'+
+        '<textarea id="gdo-'+n+'" style="display:none">'+vDone+'</textarea>'+
       '</div>'+
     '</div>';
   document.getElementById('goals-wrap').appendChild(el);
@@ -1476,10 +1493,13 @@ function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').re
 function getGoals() {
   var g=[];
   document.querySelectorAll('[id^="go-"]').forEach(function(el) {
+    // skip display divs (go-display-N), only hidden inputs (go-N)
+    if(el.id.indexOf('display')>-1) return;
     var n=el.id.split('-')[1];
     var objective=el.value.trim();
     var kr=['kr1','kr2','kr3'].map(function(k){return (document.getElementById(k+'-'+n)||{value:''}).value.trim();}).filter(Boolean);
-    var done=(document.getElementById('gdo-'+n)||{value:''}).value.trim();
+    var doneEl=document.getElementById('gdo-'+n);
+    var done=doneEl?doneEl.value.trim():'';
     var titleEl=document.getElementById('gtitle-'+n);
     var weightEl=document.getElementById('gweight-'+n);
     var type='Business KPI';
@@ -2110,16 +2130,56 @@ function saveEditGoal() {
   var whatEl = document.getElementById('gdo-'+n);
   var weightEl = document.getElementById('gweight-'+n);
 
-  if (objEl) objEl.value = obj;
-  if (kr1El) kr1El.value = document.getElementById('gm-kr1').value;
-  if (kr2El) kr2El.value = document.getElementById('gm-kr2').value;
-  if (kr3El) kr3El.value = document.getElementById('gm-kr3').value;
-  if (whatEl) whatEl.value = document.getElementById('gm-what').value;
+  var kr1Val = document.getElementById('gm-kr1').value.trim();
+  var kr2Val = document.getElementById('gm-kr2').value.trim();
+  var kr3Val = document.getElementById('gm-kr3').value.trim();
+  var whatVal = document.getElementById('gm-what').value.trim();
   var wgt = document.getElementById('gm-weight').value.trim();
+
+  // Update hidden inputs
+  if (objEl) objEl.value = obj;
+  if (kr1El) kr1El.value = kr1Val;
+  if (kr2El) kr2El.value = kr2Val;
+  if (kr3El) kr3El.value = kr3Val;
+  if (whatEl) whatEl.value = whatVal;
   if (weightEl) weightEl.textContent = wgt ? '%'+wgt : '';
+
+  // Update display elements
+  var goDisplay = document.getElementById('go-display-'+n);
+  if (goDisplay) goDisplay.textContent = obj;
+  var gdoDisplay = document.getElementById('gdo-display-'+n);
+  if (gdoDisplay) gdoDisplay.textContent = whatVal;
+
+  // Rebuild KR list display
+  var krContainer = kr1El ? kr1El.closest('.goal-kr-list') : null;
+  if (krContainer) {
+    krContainer.innerHTML = '';
+    [kr1Val, kr2Val, kr3Val].forEach(function(kv, i) {
+      var hid = document.createElement('input');
+      hid.type = 'hidden';
+      hid.id = ['kr1','kr2','kr3'][i]+'-'+n;
+      hid.value = kv;
+      if (kv) {
+        var div = document.createElement('div');
+        div.className = 'goal-kr-item';
+        div.textContent = kv;
+        div.appendChild(hid);
+        krContainer.appendChild(div);
+      } else {
+        krContainer.appendChild(hid);
+      }
+    });
+  }
 
   closeGoalModal();
   updateSummary();
+  // Auto-save
+  if (_currentUser && _currentUser.username) {
+    var _period2 = document.getElementById('e-period').value;
+    var _goals2 = getGoals();
+    var _goalsSave2 = _goals2.map(function(g){ return {objective:g.objective,kr:g.kr,done:g.done,type:g.type,weight:g.weight,score:g.score||0}; });
+    sbSaveGoals(_currentUser.username, _period2, _goalsSave2, null, null).catch(function(){});
+  }
   showToast('Hedef güncellendi');
 }
 
@@ -2527,8 +2587,8 @@ document.addEventListener('keydown', function(e) {
       </div>
 
         <div style="display:flex;gap:10px;margin-top:16px">
-          <button onclick="skipProfileSetup()" class="profile-skip-btn" style="flex:1;padding:12px;font-size:14px;font-weight:500;background:#fff;color:#111;border:1px solid #d4d4d4;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:background .15s">Şimdi değil</button>
-          <button id="profile-save-btn" onclick="saveProfile()" style="flex:1;padding:12px;font-size:14px;font-weight:600;background:#111;color:white;border:1px solid #111;border-radius:10px;cursor:pointer;font-family:inherit;transition:background .15s">Profilimi kaydet</button>
+          <button onclick="skipProfileSetup()" class="profile-skip-btn" style="flex:1;height:35px;padding:0 12px;font-size:14px;font-weight:500;background:#fff;color:#111;border:1px solid #d4d4d4;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:background .15s">Şimdi değil</button>
+          <button id="profile-save-btn" onclick="saveProfile()" style="flex:1;height:35px;padding:0 12px;font-size:14px;font-weight:600;background:#111;color:white;border:1px solid #111;border-radius:10px;cursor:pointer;font-family:inherit;transition:background .15s">Profilimi kaydet</button>
         </div>
       </div>
 
@@ -2567,7 +2627,7 @@ document.addEventListener('keydown', function(e) {
         <div style="flex:1">
           <div class="okr-label" style="margin-bottom:6px">TÜR</div>
           <div style="position:relative">
-            <select id="gm-type" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 32px 0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;background:#fff;cursor:pointer;outline:none;appearance:none;box-sizing:border-box">
+            <select id="gm-type" style="width:100%;height:35px;border:1px solid #D4D4D4;border-radius:6px;box-shadow:0 1px 2px rgba(26,26,26,.05);padding:0 32px 0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;background:#fff;cursor:pointer;outline:none;appearance:none;box-sizing:border-box">
               <option value="Business KPI">Business KPI</option>
               <option value="Culture Development">Culture Development</option>
             </select>
@@ -2578,34 +2638,34 @@ document.addEventListener('keydown', function(e) {
           <div class="okr-label" style="margin-bottom:6px">AĞIRLIK</div>
           <div style="position:relative">
             <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:14px;color:#111;pointer-events:none;line-height:1">%</span>
-            <input id="gm-weight" type="number" min="1" max="100" placeholder="14" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 8px 0 22px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
+            <input id="gm-weight" type="number" min="1" max="100" placeholder="14" style="width:100%;height:35px;border:1px solid #D4D4D4;border-radius:6px;box-shadow:0 1px 2px rgba(26,26,26,.05);padding:0 8px 0 22px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
           </div>
         </div>
       </div>
       <!-- Objective -->
       <div style="margin-bottom:12px">
         <div class="okr-label" style="margin-bottom:6px">OBJECTIVE</div>
-        <input id="gm-obj" type="text" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
+        <input id="gm-obj" type="text" style="width:100%;height:35px;border:1px solid #D4D4D4;border-radius:6px;box-shadow:0 1px 2px rgba(26,26,26,.05);padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
       </div>
       <!-- KR1 -->
       <div style="margin-bottom:12px">
         <div class="okr-label" style="margin-bottom:6px">KEY RESULT-1</div>
-        <input id="gm-kr1" type="text" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
+        <input id="gm-kr1" type="text" style="width:100%;height:35px;border:1px solid #D4D4D4;border-radius:6px;box-shadow:0 1px 2px rgba(26,26,26,.05);padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
       </div>
       <!-- KR2 -->
       <div style="margin-bottom:12px">
         <div class="okr-label" style="margin-bottom:6px">KEY RESULT-2</div>
-        <input id="gm-kr2" type="text" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
+        <input id="gm-kr2" type="text" style="width:100%;height:35px;border:1px solid #D4D4D4;border-radius:6px;box-shadow:0 1px 2px rgba(26,26,26,.05);padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
       </div>
       <!-- KR3 -->
       <div style="margin-bottom:12px">
         <div class="okr-label" style="margin-bottom:6px">KEY RESULT-3</div>
-        <input id="gm-kr3" type="text" style="width:100%;height:35px;border:1px solid rgb(212,212,212);border-radius:6px;padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
+        <input id="gm-kr3" type="text" style="width:100%;height:35px;border:1px solid #D4D4D4;border-radius:6px;box-shadow:0 1px 2px rgba(26,26,26,.05);padding:0 8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;box-sizing:border-box;background:#fff">
       </div>
       <!-- Neler Yaptın -->
       <div style="margin-bottom:16px">
         <div class="okr-label" style="margin-bottom:6px">NELER YAPTIN?</div>
-        <textarea id="gm-what" style="width:100%;height:110px;border:1px solid rgb(212,212,212);border-radius:6px;padding:8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;resize:none;box-sizing:border-box;background:#fff"></textarea>
+        <textarea id="gm-what" style="width:100%;height:110px;border:1px solid #D4D4D4;border-radius:6px;box-shadow:0 1px 2px rgba(26,26,26,.05);padding:8px;font-size:14px;font-family:Inter,sans-serif;color:#111;outline:none;resize:none;box-sizing:border-box;background:#fff"></textarea>
       </div>
     </div>
     <!-- Footer -->
